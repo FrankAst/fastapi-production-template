@@ -25,7 +25,7 @@ class TrainingService(BaseModel):
             if model:
                 return model
 
-        return make_pipeline([StandardScaler(), LinearRegression()])  # type: ignore[return-value]
+        return make_pipeline(StandardScaler(), LinearRegression())  # type: ignore[return-value]
 
     def train(self, X: Sequence[Sequence[float]], y: Sequence[float]) -> MLModel:
         if len(X) != len(y):
