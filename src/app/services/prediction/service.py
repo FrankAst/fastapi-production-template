@@ -19,7 +19,24 @@ class PredictionService(BaseModel):
         return load_model(self.model_path)
 
     def predict(self, prediction_input: PredictionInput) -> PredictionOutput:
+        """
+        Make predictions for a single or batch input.
+
+        Args:
+            prediction_input: PredictionInput instance containing
+            features for prediction.
+
+        Returns:
+            PredictionOutput: Contains predictions and count.
+
+        Raises:
+            NoTrainedModelError: If no trained model is found.
+        """
         if self.model is None:
             raise NoTrainedModelError
-        time_for_failure = self.model.predict([[prediction_input.age]])
-        return PredictionOutput(time_for_failure=time_for_failure)
+
+        feature_matrix = [list(row) for row in prediction_input.features]
+        prediction_results = self.model.predict(feature_matrix)
+        # Ensure prediction_results is a sequence of numbers
+        predictions = [float(pred) for pred in list(prediction_results)]
+        return PredictionOutput(predictions=predictions, count=len(predictions))

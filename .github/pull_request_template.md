@@ -2,15 +2,25 @@
 
 ## Summary
 
-Brief description of changes
+This PR includes:
+- Modification of endpoint POST /train/ to accept a CSV file with at least 2 columns
+where the last one must be the Target
+- Endpoint data model to load and run light validations on the CSV.
+- Domain PredictionInput modified to support a matrix with more than one feature.
+
+- Created to endpoints for predicting: prediction/single & prediction/batch. The latter
+supports a csv file with predictors features. 
+- Created unified prediction service to serve both single & batch requests.
+
 
 ## Checklist
 
 ### Code & Implementation
-- [ ] Have you run `uv run poe format` and fixed all warnings before submitting
-this PR?
-- [ ] Is all the logic in services instead of endpoints?
-- [ ] Is the code self-explanatory without requiring comments or documentation?
+- [x] Have you run `uv run poe format` and fixed all warnings before submitting
+this PR? -> Yes, while I'm still working on fixing some minor issues I believe some will get improved after
+your feedback. 
+- [x] Is all the logic in services instead of endpoints? -> Yes - but perhaps it can be improved.
+- [x] Is the code self-explanatory without requiring comments or documentation? -> Should be. 
 
 ### Machine Learning Specific
 - [ ] Are the data preprocessing steps reproducible? (e.g., deterministic pipelines, seeds set).

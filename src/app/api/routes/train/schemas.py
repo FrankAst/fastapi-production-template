@@ -46,18 +46,6 @@ class FileTrainRequest(BaseSchema):
             # Parse CSV using pandas
             df: pd.DataFrame = pd.read_csv(StringIO(csv_string))
 
-            # Minimal structure required validation
-            if df.shape[1] < 2:
-                raise HTTPException(
-                    status_code=400, detail="CSV must have at least two columns."
-                )
-
-            # Split features and target
-            X = df.iloc[:, :-1].to_numpy().tolist()
-            y = df.iloc[:, -1].to_numpy().tolist()
-
-            return X, y
-
         except pd.errors.EmptyDataError as err:
             raise HTTPException(status_code=400, detail="CSV file is empty.") from err
         except pd.errors.ParserError as err:
@@ -68,6 +56,17 @@ class FileTrainRequest(BaseSchema):
             raise HTTPException(
                 status_code=400, detail=f"Error processing CSV: {err!s}"
             ) from err
+
+        # Minimal structure required validation
+        if df.shape[1] < 2:
+            raise HTTPException(
+                status_code=400, detail="CSV must have at least two columns."
+            )
+        # Split features and target
+        X = df.iloc[:, :-1].to_numpy().tolist()
+        y = df.iloc[:, -1].to_numpy().tolist()
+
+        return X, y
 
 
 class TrainResponse(BaseSchema):
