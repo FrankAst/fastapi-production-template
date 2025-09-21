@@ -7,7 +7,7 @@
 
 ### Code & Implementation
 - [] Have you run `uv run poe format` and fixed all warnings before submitting
-this PR? 
+this PR?
 - [] Is all the logic in services instead of endpoints?
 - [] Is the code self-explanatory without requiring comments or documentation?
 
