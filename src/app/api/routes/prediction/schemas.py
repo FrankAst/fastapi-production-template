@@ -1,14 +1,14 @@
 import math
 from collections.abc import Sequence
 from io import StringIO
-from typing import Self
+from typing import Self, cast
 
 import pandas as pd
 from fastapi import HTTPException, UploadFile
-from pydantic import Field, model_validator
+from pandas import DataFrame
+from pydantic import ConfigDict, Field, model_validator
 
 from app.api.schema import BaseSchema
-from app.domain.exceptions import FeaturesContainNaNError, FeaturesEmptyError
 
 
 class SinglePredictionRequest(BaseSchema):
@@ -28,8 +28,7 @@ class SinglePredictionRequest(BaseSchema):
 class BatchPredictionRequest(BaseSchema):
     file: UploadFile
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @classmethod
     async def from_upload(cls, file: UploadFile) -> Self:
@@ -47,10 +46,7 @@ class BatchPredictionRequest(BaseSchema):
         Returns:
             Sequence[Sequence[float]]: Feature data.
         Raises:
-            HTTPException: If the uploaded file is not a CSV, is empty, has less than
-            one column, or cannot be parsed.
-            FeaturesEmptyError: If the CSV file has less than one column.
-            FeaturesContainNaNError: If the CSV file contains NaN values.
+            HTTPException: If file is not CSV or processing fails.
         """
         if not self.file.filename or not self.file.filename.endswith(".csv"):
             raise HTTPException(status_code=400, detail="Only CSV files are supported.")
@@ -61,25 +57,11 @@ class BatchPredictionRequest(BaseSchema):
             csv_string = contents.decode("utf-8")
 
             # Parse CSV using pandas
-            df: pd.DataFrame = pd.read_csv(StringIO(csv_string))
-            if df.shape[1] < 1:
-                raise FeaturesEmptyError
-
-            # Check for NaN values
-            if df.isna().to_numpy().any():
-                raise FeaturesContainNaNError
+            df: DataFrame = pd.read_csv(StringIO(csv_string))  # type: ignore[misc]
 
             # Convert columns to matrix
-            return df.to_numpy().tolist()
+            return cast("Sequence[Sequence[float]]", df.to_numpy().tolist())
 
-        except pd.errors.EmptyDataError as err:
-            raise HTTPException(status_code=400, detail="CSV file is empty") from err
-        except pd.errors.ParserError as err:
-            raise HTTPException(status_code=400, detail="Invalid CSV format") from err
-        except UnicodeDecodeError as err:
-            raise HTTPException(
-                status_code=400, detail="Uploaded file could not be decoded as UTF-8"
-            ) from err
         except Exception as err:
             raise HTTPException(
                 status_code=400, detail=f"Error processing CSV: {err!s}"

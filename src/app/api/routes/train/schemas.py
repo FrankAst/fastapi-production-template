@@ -4,8 +4,10 @@ from typing import Self
 
 import pandas as pd
 from fastapi import HTTPException, UploadFile
+from pandas import DataFrame
 
 from app.api.schema import BaseSchema
+from app.domain import MIN_REQUIRED_COLUMNS
 
 
 class FileTrainRequest(BaseSchema):
@@ -44,27 +46,21 @@ class FileTrainRequest(BaseSchema):
             contents = await self.file.read()
             csv_string = contents.decode("utf-8")
             # Parse CSV using pandas
-            df: pd.DataFrame = pd.read_csv(StringIO(csv_string))
+            df: DataFrame = pd.read_csv(StringIO(csv_string))  # type: ignore[misc]
 
-        except pd.errors.EmptyDataError as err:
-            raise HTTPException(status_code=400, detail="CSV file is empty.") from err
-        except pd.errors.ParserError as err:
-            raise HTTPException(
-                status_code=400, detail="Error parsing CSV file."
-            ) from err
-        except UnicodeDecodeError as err:
+        except Exception as err:
             raise HTTPException(
                 status_code=400, detail=f"Error processing CSV: {err!s}"
             ) from err
 
         # Minimal structure required validation
-        if df.shape[1] < 2:
+        if df.shape[1] < MIN_REQUIRED_COLUMNS:
             raise HTTPException(
                 status_code=400, detail="CSV must have at least two columns."
             )
         # Split features and target
         X = df.iloc[:, :-1].to_numpy().tolist()
-        y = df.iloc[:, -1].to_numpy().tolist()
+        y = df.iloc[:, -1].to_numpy().tolist()  # type: ignore[assignment]
 
         return X, y
 
