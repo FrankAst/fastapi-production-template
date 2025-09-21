@@ -1,14 +1,12 @@
 import math
 from collections.abc import Sequence
-from io import StringIO
 from typing import Self, cast
 
-import pandas as pd
-from fastapi import HTTPException, UploadFile
-from pandas import DataFrame
+from fastapi import UploadFile
 from pydantic import ConfigDict, Field, model_validator
 
 from app.api.schema import BaseSchema
+from app.utils import process_csv_file
 
 
 class SinglePredictionRequest(BaseSchema):
@@ -43,29 +41,13 @@ class BatchPredictionRequest(BaseSchema):
     async def to_feature_matrix(self) -> Sequence[Sequence[float]]:
         """
         Convert uploaded CSV to feature Matrix (no target column).
+
         Returns:
             Sequence[Sequence[float]]: Feature data.
-        Raises:
-            HTTPException: If file is not CSV or processing fails.
         """
-        if not self.file.filename or not self.file.filename.endswith(".csv"):
-            raise HTTPException(status_code=400, detail="Only CSV files are supported.")
-
-        try:
-            # Read CSV content
-            contents = await self.file.read()
-            csv_string = contents.decode("utf-8")
-
-            # Parse CSV using pandas
-            df: DataFrame = pd.read_csv(StringIO(csv_string))  # type: ignore[misc]
-
-            # Convert columns to matrix
-            return cast("Sequence[Sequence[float]]", df.to_numpy().tolist())
-
-        except Exception as err:
-            raise HTTPException(
-                status_code=400, detail=f"Error processing CSV: {err!s}"
-            ) from err
+        df = await process_csv_file(self.file)
+        # Convert columns to matrix
+        return cast("Sequence[Sequence[float]]", df.to_numpy().tolist())
 
 
 class SinglePredictionResponse(BaseSchema):

@@ -28,6 +28,10 @@ async def predict(
     """
     Make a single prediction from an array of features.
 
+    Args:
+        prediction_request: The input features for making a prediction.
+        prediction_service: Injected service for handling predictions.
+
     Returns:
         SinglePredictionResponse: The prediction result for the input features.
     """
@@ -46,6 +50,7 @@ async def batch_predict(
     Make batch predictions from an uploaded CSV file.
 
     Args:
+        prediction_service: Injected service for handling predictions.
         file: CSV file containing feature data for batch prediction.
 
     Returns:
