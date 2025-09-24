@@ -104,6 +104,14 @@ addopts = [
     "--cov-report=term-missing:skip-covered",
     "-vvv",
 ]
+# Configure anyio to use only asyncio backend
+markers = [
+    "anyio: mark test to run with anyio",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::pytest.PytestUnknownMarkWarning",
+]
 
 #########################
 # Coverage
