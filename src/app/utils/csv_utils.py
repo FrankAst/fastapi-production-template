@@ -7,7 +7,7 @@ from fastapi import HTTPException, UploadFile
 from pandas import DataFrame
 
 
-def validate_csv_filename(filename: str | None) -> None:
+def _validate_csv_filename(filename: str | None) -> None:
     """
     Validate that the uploaded file has a .csv extension.
 
@@ -21,7 +21,7 @@ def validate_csv_filename(filename: str | None) -> None:
         raise HTTPException(status_code=400, detail="Only CSV files are supported.")
 
 
-async def read_csv_content(file: UploadFile) -> str:
+async def _read_csv_content(file: UploadFile) -> str:
     """
     Read and decode the content of an uploaded CSV file.
 
@@ -43,7 +43,7 @@ async def read_csv_content(file: UploadFile) -> str:
         ) from err
 
 
-def parse_csv_to_dataframe(csv_content: str) -> DataFrame:
+def _parse_csv_to_dataframe(csv_content: str) -> DataFrame:
     """
     Parse CSV string content into a pandas DataFrame.
 
@@ -75,6 +75,6 @@ async def process_csv_file(file: UploadFile) -> DataFrame:
     Returns:
         DataFrame: The processed CSV data as a pandas DataFrame.
     """
-    validate_csv_filename(file.filename)
-    csv_content = await read_csv_content(file)
-    return parse_csv_to_dataframe(csv_content)
+    _validate_csv_filename(file.filename)
+    csv_content = await _read_csv_content(file)
+    return _parse_csv_to_dataframe(csv_content)
