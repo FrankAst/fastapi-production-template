@@ -104,7 +104,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "joblib-stubs", specifier = "==1.5.0.1.20250510" },
-    { name = "pandas-stubs", specifier = ">=2.3.2.250827" },
+    { name = "pandas-stubs", specifier = "==2.3.2.250827" },
     { name = "poethepoet", specifier = "==0.37.0" },
     { name = "uv", specifier = "==0.8.9" },
 ]

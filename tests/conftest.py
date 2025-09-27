@@ -14,7 +14,7 @@ def injector_override() -> None:
 @pytest.fixture(scope="session")
 def anyio_backend() -> str:
     """Configure anyio to use only asyncio backend.
-    
+
     Returns:
         The asyncio backend identifier.
     """
