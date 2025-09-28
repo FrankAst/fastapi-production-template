@@ -168,18 +168,23 @@ async def test_process_csv_file_empty_content() -> None:
 
 
 @pytest.mark.anyio
-async def test_process_csv_file_malformed_csv_handled_gracefully() -> None:
-    """Test that pandas handles malformed CSV gracefully."""
-    # CSV with inconsistent columns - pandas is forgiving
+async def test_process_csv_file_malformed_csv_rejected() -> None:
+    """Test that malformed CSV with missing target values is rejected."""
+    # CSV with inconsistent columns that results in NaN in target column
     csv_data = "name,age\nJohn,25,extra_column\nJane"
 
     mock_file = Mock(spec=UploadFile)
     mock_file.filename = "malformed.csv"
     mock_file.read = AsyncMock(return_value=csv_data.encode("utf-8"))
 
-    # This should still work as pandas is quite forgiving
-    result = await process_csv_file(mock_file)
-    assert isinstance(result, pd.DataFrame)
+    # This should be rejected due to missing target values
+    with pytest.raises(HTTPException) as exc_info:
+        await process_csv_file(mock_file)
+
+    assert exc_info.value.status_code == HTTP_400_BAD_REQUEST
+    assert "Target column (last column) contains missing values" in (
+        exc_info.value.detail
+    )
 
 
 @pytest.mark.anyio
@@ -196,3 +201,21 @@ async def test_process_csv_file_with_headers_only() -> None:
     assert isinstance(result, pd.DataFrame)
     assert len(result) == 0  # No data rows
     assert list(result.columns) == ["name", "age", "city"]
+
+
+@pytest.mark.anyio
+async def test_process_csv_file_target_column_with_nan() -> None:
+    """Test CSV validation fails when target column contains NaN values."""
+    csv_data = "feature1,feature2,target\n25.0,10.5,5.0\n30.0,15.2,6.0\n35.0,20.1,"
+
+    mock_file = Mock(spec=UploadFile)
+    mock_file.filename = "test_nan_target.csv"
+    mock_file.read = AsyncMock(return_value=csv_data.encode("utf-8"))
+
+    with pytest.raises(HTTPException) as exc_info:
+        await process_csv_file(mock_file)
+
+    assert exc_info.value.status_code == HTTP_400_BAD_REQUEST
+    assert "Target column (last column) contains missing values" in (
+        exc_info.value.detail
+    )

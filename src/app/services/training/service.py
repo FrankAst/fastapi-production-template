@@ -10,8 +10,6 @@ from app.domain import MLModel
 from app.services.helper import load_model, save_model
 from app.settings import Settings
 
-from .exceptions import DimensionalityMismatchError
-
 
 class TrainingService(BaseModel):
     model_path: Path = Field(default=Settings.MODEL_PATH)
@@ -34,15 +32,10 @@ class TrainingService(BaseModel):
             df (DataFrame): DataFrame where the last column is the target variable.
         Returns:
             MLModel: The trained machine learning model.
-        Raises:
-            DimensionalityMismatchError: If the number of samples in features and target do not match
         """
         # Split features and target
         X = df.iloc[:, :-1].to_numpy().tolist()
         y = df.iloc[:, -1].to_numpy().tolist()
-
-        if len(X) != len(y):
-            raise DimensionalityMismatchError(x_dim=len(X), y_dim=len(y))
 
         pipeline = self.model
         pipeline_fit = pipeline.fit(X, y)

@@ -64,17 +64,43 @@ def _parse_csv_to_dataframe(csv_content: str) -> DataFrame:
         ) from err
 
 
+def _validate_target_column(df: DataFrame) -> None:
+    """
+    Validate that the target column (last column) doesn't contain NaN values.
+
+    Args:
+        df: The DataFrame to validate.
+
+    Raises:
+        HTTPException: If the target column contains NaN values.
+    """
+    if df.empty:
+        return
+
+    target_column = df.iloc[:, -1]
+    if target_column.isna().any():
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Target column (last column) contains missing values. "
+                "Please ensure all target values are provided."
+            ),
+        )
+
+
 async def process_csv_file(file: UploadFile) -> DataFrame:
     """
-    Complete CSV processing pipeline: validate filename, read content, and parse
-    to DataFrame.
+    Complete CSV processing pipeline: validate filename, read content, parse
+    to DataFrame, and validate target column.
 
     Args:
         file: The uploaded CSV file to process.
 
     Returns:
-        DataFrame: The processed CSV data as a pandas DataFrame.
+        DataFrame: The processed and validated CSV data as a pandas DataFrame.
     """
     _validate_csv_filename(file.filename)
     csv_content = await _read_csv_content(file)
-    return _parse_csv_to_dataframe(csv_content)
+    df = _parse_csv_to_dataframe(csv_content)
+    _validate_target_column(df)
+    return df

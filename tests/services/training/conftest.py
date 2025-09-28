@@ -26,8 +26,4 @@ def training_service(
     return training_service_
 
 
-@pytest.fixture
-def training_data_dimension_mismatch() -> tuple[list[list[float]], list[float]]:
-    X = [[25.0], [30.0], [35.0]]
-    y = [5.0, 6.0]
-    return X, y
+# Fixtures for training service tests will be added here as needed
