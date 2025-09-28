@@ -18,9 +18,11 @@ async def train(
 ) -> TrainResponse:
     # Create request object and process file
     train_request = await FileTrainRequest.from_upload(file)
-    X, y = await train_request.to_training_data()
+    df = await train_request.to_training_data()
 
     # Train the model
-    training_service.train(X, y)
+    training_service.train(df)
 
-    return TrainResponse(message=f"Model trained successfully with {len(X)} samples")
+    return TrainResponse(
+        message=f"Model trained successfully with {df.shape[0]} samples"
+    )

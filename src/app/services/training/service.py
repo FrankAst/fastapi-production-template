@@ -1,6 +1,6 @@
-from collections.abc import Sequence
 from pathlib import Path
 
+from pandas import DataFrame
 from pydantic import BaseModel, ConfigDict, Field
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import make_pipeline
@@ -27,7 +27,20 @@ class TrainingService(BaseModel):
 
         return make_pipeline(StandardScaler(), LinearRegression())  # type: ignore[return-value]
 
-    def train(self, X: Sequence[Sequence[float]], y: Sequence[float]) -> MLModel:
+    def train(self, df: DataFrame) -> MLModel:
+        """
+        Train the ML model with provided features and target.
+        Args:
+            df (DataFrame): DataFrame where the last column is the target variable.
+        Returns:
+            MLModel: The trained machine learning model.
+        Raises:
+            DimensionalityMismatchError: If the number of samples in features and target do not match
+        """
+        # Split features and target
+        X = df.iloc[:, :-1].to_numpy().tolist()
+        y = df.iloc[:, -1].to_numpy().tolist()
+
         if len(X) != len(y):
             raise DimensionalityMismatchError(x_dim=len(X), y_dim=len(y))
 

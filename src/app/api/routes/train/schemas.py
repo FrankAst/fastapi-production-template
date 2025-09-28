@@ -1,7 +1,7 @@
-from collections.abc import Sequence
 from typing import Self
 
 from fastapi import HTTPException, UploadFile
+from pandas import DataFrame
 
 from app.api.schema import BaseSchema
 from app.domain import MIN_REQUIRED_COLUMNS
@@ -24,11 +24,11 @@ class FileTrainRequest(BaseSchema):
         """
         return cls(file=file)
 
-    async def to_training_data(self) -> tuple[Sequence[Sequence[float]], Sequence[int]]:
+    async def to_training_data(self) -> DataFrame:
         """Convert uploaded CSV to training data format - last column is target
 
         Returns:
-            tuple[Sequence[Sequence[float]], Sequence[int]]: Features and target data.
+            DataFrame: Features and target data.
 
         Raises:
             HTTPException: If the uploaded file is not a CSV, is empty, has less than
@@ -41,11 +41,8 @@ class FileTrainRequest(BaseSchema):
             raise HTTPException(
                 status_code=400, detail="CSV must have at least two columns."
             )
-        # Split features and target
-        X = df.iloc[:, :-1].to_numpy().tolist()
-        y = df.iloc[:, -1].to_numpy().tolist()
 
-        return X, y
+        return df
 
 
 class TrainResponse(BaseSchema):
