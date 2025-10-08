@@ -1,8 +1,9 @@
 import math
 from collections.abc import Sequence
-from typing import Self, cast
+from typing import Self
 
 from fastapi import UploadFile
+from pandas import DataFrame
 from pydantic import ConfigDict, Field, model_validator
 
 from app.api.schema import BaseSchema
@@ -29,25 +30,14 @@ class BatchPredictionRequest(BaseSchema):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @classmethod
-    async def from_upload(cls, file: UploadFile) -> Self:
+    async def from_upload(cls, file: UploadFile) -> DataFrame:
         """
-        Create BatchPredictionRequest from uploaded file.
+        Create feature matrix from uploaded file.
 
         Returns:
-            BatchPredictionRequest: An instance created from the uploaded file.
+            DataFrame: Processed feature data from the uploaded file.
         """
-        return cls(file=file)
-
-    async def to_feature_matrix(self) -> Sequence[Sequence[float]]:
-        """
-        Convert uploaded CSV to feature Matrix (no target column).
-
-        Returns:
-            Sequence[Sequence[float]]: Feature data.
-        """
-        df = await process_csv_file(self.file)
-        # Convert columns to matrix
-        return cast("Sequence[Sequence[float]]", df.to_numpy().tolist())
+        return await process_csv_file(file)
 
 
 class SinglePredictionResponse(BaseSchema):

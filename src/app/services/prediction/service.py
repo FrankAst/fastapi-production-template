@@ -35,8 +35,7 @@ class PredictionService(BaseModel):
         if self.model is None:
             raise NoTrainedModelError
 
-        feature_matrix = [list(row) for row in prediction_input.features]
-        prediction_results = self.model.predict(feature_matrix)
+        prediction_results = self.model.predict(prediction_input.features)
         # Ensure prediction_results is a sequence of numbers
         predictions = [float(pred) for pred in list(prediction_results)]
         return PredictionOutput(predictions=predictions, count=len(predictions))

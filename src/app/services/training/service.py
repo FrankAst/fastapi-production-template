@@ -34,8 +34,8 @@ class TrainingService(BaseModel):
             MLModel: The trained machine learning model.
         """
         # Split features and target
-        X = df.iloc[:, :-1].to_numpy().tolist()
-        y = df.iloc[:, -1].to_numpy().tolist()
+        X = df.iloc[:, :-1]  # Features as DataFrame
+        y = df.iloc[:, -1].tolist()  # Target as list of floats
 
         pipeline = self.model
         pipeline_fit = pipeline.fit(X, y)

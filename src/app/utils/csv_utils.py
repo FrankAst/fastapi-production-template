@@ -6,6 +6,15 @@ import pandas as pd
 from fastapi import HTTPException, UploadFile
 from pandas import DataFrame
 
+# CSV validation constants
+SUPPORTED_CSV_EXTENSION = ".csv"
+MIN_REQUIRED_COLUMNS = 2
+"""Minimum number of columns required in training CSV files.
+
+The CSV must have at least two columns: one or more feature columns
+and one target column.
+"""
+
 
 def _validate_csv_filename(filename: str | None) -> None:
     """
@@ -17,7 +26,7 @@ def _validate_csv_filename(filename: str | None) -> None:
     Raises:
         HTTPException: If the filename is None or doesn't end with .csv.
     """
-    if not filename or not filename.endswith(".csv"):
+    if not filename or not filename.endswith(SUPPORTED_CSV_EXTENSION):
         raise HTTPException(status_code=400, detail="Only CSV files are supported.")
 
 
@@ -88,6 +97,23 @@ def _validate_target_column(df: DataFrame) -> None:
         )
 
 
+def _validate_number_of_columns(df: DataFrame) -> None:
+    """
+    Validate that the DataFrame has at least two columns.
+
+    Args:
+        df: The DataFrame to validate.
+
+    Raises:
+        HTTPException: If the DataFrame has fewer than two columns.
+    """
+    if df.shape[1] < MIN_REQUIRED_COLUMNS:
+        raise HTTPException(
+            status_code=400,
+            detail="CSV must contain at least two columns (features and target).",
+        )
+
+
 async def process_csv_file(file: UploadFile) -> DataFrame:
     """
     Complete CSV processing pipeline: validate filename, read content, parse
@@ -103,4 +129,6 @@ async def process_csv_file(file: UploadFile) -> DataFrame:
     csv_content = await _read_csv_content(file)
     df = _parse_csv_to_dataframe(csv_content)
     _validate_target_column(df)
+    _validate_number_of_columns(df)
+
     return df

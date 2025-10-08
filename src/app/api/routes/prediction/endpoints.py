@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from dependency_injector.wiring import inject
-from fastapi import APIRouter, Body, File, UploadFile
+from fastapi import APIRouter, Body, File, HTTPException, UploadFile
 
 from app.api.dependencies import PredictionServiceDependency
 from app.domain import PredictionInput
@@ -18,26 +18,26 @@ router = APIRouter(prefix="/prediction", tags=["Prediction"])
 
 
 @router.post("/single")
-@inject
 async def predict(
-    prediction_request: Annotated[
+    _prediction_request: Annotated[
         SinglePredictionRequest, Body(openapi_examples=EXAMPLES)
     ],
-    prediction_service: PredictionServiceDependency,
+    _prediction_service: PredictionServiceDependency,
 ) -> SinglePredictionResponse:
     """
-    Make a single prediction from an array of features.
+    Placeholder for single predictions from UI.
 
-    Args:
-        prediction_request: The input features for making a prediction.
-        prediction_service: Injected service for handling predictions.
+    This endpoint is reserved for future UI integration where users will input
+    individual feature values through a web interface. The implementation will
+    be completed once the UI requirements and input structure are defined.
 
-    Returns:
-        SinglePredictionResponse: The prediction result for the input features.
+    Raises:
+        HTTPException: 501 Not Implemented - Use /batch endpoint for now.
     """
-    feature_matrix = PredictionInput(features=[prediction_request.features])
-    prediction = prediction_service.predict(feature_matrix)
-    return SinglePredictionResponse(prediction=prediction.predictions[0])
+    raise HTTPException(
+        status_code=501,
+        detail="Single prediction endpoint not yet implemented. Use /batch for now.",
+    )
 
 
 @router.post("/batch")
@@ -56,8 +56,11 @@ async def batch_predict(
     Returns:
         BatchPredictionResponse: The prediction results and count.
     """
-    batch_request = await BatchPredictionRequest.from_upload(file)
-    feature_matrix = await batch_request.to_feature_matrix()
+
+    feature_matrix = await BatchPredictionRequest.from_upload(file)
+    # In the future there might be additional processing steps here
+    # J.F recommended having a data structure in the sv layer to perform
+    # validation/transformation before creating PredictionInput
 
     # Create PredictionInput and perform predictions
     prediction_input = PredictionInput(features=feature_matrix)
