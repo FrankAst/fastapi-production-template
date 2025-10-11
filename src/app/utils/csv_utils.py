@@ -26,8 +26,16 @@ def _validate_csv_filename(filename: str | None) -> None:
     Raises:
         HTTPException: If the filename is None or doesn't end with .csv.
     """
-    if not filename or not filename.endswith(SUPPORTED_CSV_EXTENSION):
-        raise HTTPException(status_code=400, detail="Only CSV files are supported.")
+    if not filename:
+        raise HTTPException(
+            status_code=400, detail="Invalid file type. Filename is missing."
+        )
+
+    if not filename.endswith(SUPPORTED_CSV_EXTENSION):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid file type. Only CSV files (.csv) are supported.",
+        )
 
 
 async def _read_csv_content(file: UploadFile) -> str:
