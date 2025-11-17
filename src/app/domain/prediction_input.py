@@ -1,11 +1,10 @@
 from typing import Self
 
-import numpy as np
 from pandas import DataFrame
 from pydantic import Field, model_validator
 
 from .base import BaseEntity
-from .exceptions import FeaturesContainNaNError, FeaturesEmptyError
+from .exceptions import FeaturesEmptyError
 
 
 class PredictionInput(BaseEntity):
@@ -15,8 +14,5 @@ class PredictionInput(BaseEntity):
     def validate_features(self) -> Self:
         if self.features.empty:
             raise FeaturesEmptyError
-        # Check for NaN values
-        if np.isnan(self.features).any():
-            raise FeaturesContainNaNError
 
         return self

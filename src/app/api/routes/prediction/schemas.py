@@ -7,6 +7,7 @@ from pandas import DataFrame
 from pydantic import ConfigDict, Field, model_validator
 
 from app.api.schema import BaseSchema
+from app.domain import SchemaValidator
 from app.utils import process_csv_file
 
 
@@ -34,10 +35,18 @@ class BatchPredictionRequest(BaseSchema):
         """
         Create feature matrix from uploaded file.
 
+        Validates the raw uploaded CSV against the training schema before
+        any processing. This ensures the uploaded data has the correct
+        structure, types, and columns expected by the model.
+
         Returns:
-            DataFrame: Processed feature data from the uploaded file.
+            DataFrame: Validated and processed feature data from the uploaded file.
         """
-        return await process_csv_file(file)
+        # Parse the uploaded CSV file
+        df = await process_csv_file(file)
+
+        # Validate against training schema (with type coercion and nullable columns)
+        return SchemaValidator.validate_dataframe(df)
 
 
 class SinglePredictionResponse(BaseSchema):

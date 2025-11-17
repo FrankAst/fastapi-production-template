@@ -6,7 +6,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
-from app.domain import MLModel
+from app.domain import MLModel, SchemaValidator
 from app.services.helper import load_model, save_model
 from app.settings import Settings
 
@@ -28,11 +28,18 @@ class TrainingService(BaseModel):
     def train(self, df: DataFrame) -> MLModel:
         """
         Train the ML model with provided features and target.
+
+        This method also generates and saves a Pandera schema from the
+        training data features for later validation of prediction inputs.
+
         Args:
             df (DataFrame): DataFrame where the last column is the target variable.
         Returns:
             MLModel: The trained machine learning model.
         """
+        # Generate and save schema from training data (features only)
+        SchemaValidator.infer_and_save_schema(df)
+
         # Split features and target
         X = df.iloc[:, :-1]  # Features as DataFrame
         y = df.iloc[:, -1].tolist()  # Target as list of floats

@@ -56,11 +56,9 @@ async def batch_predict(
     Returns:
         BatchPredictionResponse: The prediction results and count.
     """
-
+    # Dataset loading and validation
     feature_matrix = await BatchPredictionRequest.from_upload(file)
     # In the future there might be additional processing steps here
-    # J.F recommended having a data structure in the sv layer to perform
-    # validation/transformation before creating PredictionInput
 
     # Create PredictionInput and perform predictions
     prediction_input = PredictionInput(features=feature_matrix)
