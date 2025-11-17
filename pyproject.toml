@@ -156,6 +156,18 @@ disallow_untyped_calls = true
 disallow_untyped_defs = true
 disallow_untyped_decorators = true
 
+[[tool.mypy.overrides]]
+module = "pandera.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "app.domain.schema_validator",
+    "app.api.error_handlers.*",
+]
+disallow_any_unimported = false
+warn_return_any = false
+
 
 #########################
 # RUFF
@@ -262,6 +274,7 @@ no-docstring-rgx = "^_"
 property-classes = ["abc.abstractproperty"]
 variable-naming-style = "snake_case"
 variable-rgx = "[a-z_][a-z0-9_]{2,30}$"
+extension-pkg-allow-list = ["pandera"]
 
 [tool.pylint.classes]
 defining-attr-methods = ["__init__", "__new__", "setUp"]
@@ -296,8 +309,10 @@ max-module-lines = 400
 
 [tool.pylint.imports]
 deprecated-modules = ["regsub", "TERMIOS", "Bastion", "rexec"]
-known-third-party = ["enchant"]
-
+known-third-party = ["enchant", "pandera"]
+ext-import-graph = ""
+import-graph = ""
+int-import-graph = ""
 
 [tool.pylint.logging]
 logging-format-style = "old"
@@ -328,6 +343,8 @@ disable = [
     "magic-value-comparison",
     "consider-using-namedtuple-or-dataclass",
 ]
+
+generated-members = ["pandera.*"]
 
 enable = [
     "bad-inline-option",

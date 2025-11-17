@@ -1,10 +1,15 @@
 """Error handlers for data validation exceptions."""
 
-import json
+from __future__ import annotations
 
-from fastapi import Request
+import json
+from typing import TYPE_CHECKING
+
 from fastapi.responses import JSONResponse
-from pandera.errors import SchemaErrors
+
+if TYPE_CHECKING:
+    from fastapi import Request
+    from pandera.errors import SchemaErrors
 
 
 def schema_validation_handler(

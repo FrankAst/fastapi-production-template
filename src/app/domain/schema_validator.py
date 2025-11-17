@@ -1,14 +1,20 @@
 """Pandera schema validation for dataset inputs."""
 
-from pathlib import Path
+from __future__ import annotations
 
-import pandera as pa
-from pandas import DataFrame
-from pandera import DataFrameSchema
+from typing import TYPE_CHECKING
+
+import pandera as pa  # pylint: disable=import-error
+from pandera import DataFrameSchema  # pylint: disable=import-error
 
 from app.settings import Settings
 
 from .exceptions import NoTrainingSchemaError
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from pandas import DataFrame
 
 
 class SchemaValidator:
@@ -62,7 +68,7 @@ class SchemaValidator:
 
         # Save schema to YAML for reuse
         schema_path = cls.get_schema_path()
-        schema.to_yaml(schema_path)  # type: ignore  # noqa: PGH003
+        schema.to_yaml(schema_path)  # pyright: ignore[reportUnknownMemberType]
 
         return schema
 
@@ -78,7 +84,7 @@ class SchemaValidator:
         if not schema_path.exists():
             return None
 
-        return pa.DataFrameSchema.from_yaml(schema_path)  # type: ignore  # noqa: PGH003
+        return pa.DataFrameSchema.from_yaml(schema_path)  # pyright: ignore[reportUnknownMemberType]
 
     @classmethod
     def validate_dataframe(cls, df: DataFrame) -> DataFrame:
