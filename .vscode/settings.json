@@ -68,5 +68,6 @@
         "repositories": false,
         "searchAndCompare": false,
         "launchpad": false
-    }
+    },
+    "python-envs.pythonProjects": []
 }
