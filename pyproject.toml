@@ -213,7 +213,7 @@ skips = ["B101"]
 #########################
 
 [tool.pylint.main]
-extension-pkg-whitelist = ["mypy", "dependency_injector"]
+extension-pkg-whitelist = ["mypy", "dependency_injector", "pandera"]
 fail-on = ["I"]
 fail-under = 10
 ignore = []
@@ -242,7 +242,6 @@ load-plugins = [
     "pylint_pydantic",
 ]
 py-version = "3.12"
-suggestion-mode = true
 
 [tool.pylint.basic]
 argument-naming-style = "snake_case"

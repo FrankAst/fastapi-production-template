@@ -114,7 +114,7 @@ def prediction_with_reordered_columns() -> pd.DataFrame:
 @pytest.fixture(autouse=True)
 def mock_schema_directory(
     tmp_path: Path,
-) -> Generator[None, None, None]:
+) -> Generator[None]:
     """
     Mock the schema directory to use a temporary path during tests.
 
