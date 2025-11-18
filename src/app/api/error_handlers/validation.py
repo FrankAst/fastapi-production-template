@@ -34,7 +34,7 @@ def schema_validation_handler(
         content={
             "error": "Data validation failed",
             "details": error_details,
-            "failure_cases": exc.failure_cases.to_dict("records")  # type: ignore  # noqa: PGH003
+            "failure_cases": exc.failure_cases.to_dict("records")
             if hasattr(exc, "failure_cases")
             else None,
         },
