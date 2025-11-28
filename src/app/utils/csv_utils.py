@@ -16,9 +16,8 @@ and one target column.
 """
 
 
-def _validate_csv_filename(filename: str | None) -> None:
+def _validate_csv_filename_extension(filename: str | None) -> None:
     """
-    Validate that the uploaded file has a .csv extension.
 
     Args:
         filename: The filename to validate.
@@ -38,9 +37,8 @@ def _validate_csv_filename(filename: str | None) -> None:
         )
 
 
-async def _read_csv_content(file: UploadFile) -> str:
+async def _read_and_decode_csv_content(file: UploadFile) -> str:
     """
-    Read and decode the content of an uploaded CSV file.
 
     Args:
         file: The uploaded file to read.
@@ -133,8 +131,8 @@ async def process_csv_file(file: UploadFile) -> DataFrame:
     Returns:
         DataFrame: The processed and validated CSV data as a pandas DataFrame.
     """
-    _validate_csv_filename(file.filename)
-    csv_content = await _read_csv_content(file)
+    _validate_csv_filename_extension(file.filename)
+    csv_content = await _read_and_decode_csv_content(file)
     df = _parse_csv_to_dataframe(csv_content)
     _validate_target_column(df)
     _validate_number_of_columns(df)

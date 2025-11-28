@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/astral-sh/uv-pre-commit
-    rev: "0.9.10"
+    rev: "0.9.13"
     hooks:
     -   id: uv-lock
 
@@ -19,12 +19,12 @@ repos:
     -   id: debug-statements
 
 -   repo: https://github.com/gitleaks/gitleaks
-    rev: "v8.29.0"
+    rev: "v8.30.0"
     hooks:
     -   id: gitleaks
 
 -   repo: https://github.com/PyCQA/bandit
-    rev: "1.9.1"
+    rev: "1.9.2"
     hooks:
     -   id: bandit
         args:
@@ -37,7 +37,7 @@ repos:
     -   id: pre-commit-update
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.14.5"
+    rev: "v0.14.6"
     hooks:
     -   id: ruff-format
     -   id: ruff-check
@@ -48,6 +48,7 @@ repos:
     rev: "v4.0.3"
     hooks:
     -   id: pylint
+        exclude: ^src/app/playground/
         additional_dependencies:
         -   "dependency-injector>=4.48.1"
         -   "fastapi==0.116.1"
@@ -69,6 +70,7 @@ repos:
     rev: "v1.18.2"
     hooks:
     -   id: mypy
+        exclude: ^src/app/playground/
         additional_dependencies:
         -   "dependency-injector>=4.48.1"
         -   "fastapi==0.116.1"
