@@ -45,7 +45,7 @@ class BatchPredictionRequest(BaseSchema):
         # Parse the uploaded CSV file
         df = await process_csv_file(file)
 
-        # Validate against training schema (with type coercion and nullable columns)
+        # Validate against training schema (raw data structure)
         return SchemaValidator.validate_dataframe(df)
 
 

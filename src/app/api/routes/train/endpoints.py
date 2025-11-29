@@ -14,7 +14,8 @@ router = APIRouter(prefix="/train", tags=["Training"])
 @router.post("/", responses=RESPONSES)
 @inject
 async def train(
-    training_service: TrainingServiceDependency, file: Annotated[UploadFile, File(...)]
+    training_service: TrainingServiceDependency,
+    file: Annotated[UploadFile, File(...)],
 ) -> TrainResponse:
     # Create request object and process file
     train_request = await FileTrainRequest.from_upload(file)
