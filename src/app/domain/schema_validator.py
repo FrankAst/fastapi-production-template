@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import pandera as pa  # pylint: disable=import-error
-from pandera import DataFrameSchema  # pylint: disable=import-error
+import pandera as pa
+from pandera import DataFrameSchema
 
 from app.settings import Settings
 

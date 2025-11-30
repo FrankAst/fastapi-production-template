@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from fastapi import Request, Response
-from pandera.errors import SchemaErrors  # pylint: disable=import-error
+from pandera.errors import SchemaErrors
 
 from app.domain import NoTrainingSchemaError
 from app.services import NoTrainedModelError

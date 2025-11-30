@@ -23,7 +23,9 @@ class TrainingService(BaseModel):
             if model:
                 return model
 
-        return make_pipeline(StandardScaler(), LogisticRegression())  # type: ignore[return-value]
+        return make_pipeline(
+            StandardScaler(), LogisticRegression(), memory="cache_folder"
+        )  # type: ignore[return-value]
 
     def train(self, df: DataFrame) -> MLModel:
         """

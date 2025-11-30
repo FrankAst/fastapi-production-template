@@ -26,6 +26,7 @@ dependencies = [
 [tool.uv]
 default-groups = [
     "dev",
+    "test",
 ]
 
 [dependency-groups]

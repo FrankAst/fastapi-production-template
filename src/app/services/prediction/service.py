@@ -37,5 +37,7 @@ class PredictionService(BaseModel):
 
         prediction_results = self.model.predict(prediction_input.features)
         # Ensure prediction_results is a sequence of numbers
-        predictions = [float(pred) for pred in list(prediction_results)]
-        return PredictionOutput(predictions=predictions, count=len(predictions))
+
+        return PredictionOutput(
+            predictions=prediction_results, count=len(prediction_results)
+        )

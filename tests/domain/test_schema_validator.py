@@ -2,7 +2,7 @@
 
 import pandas as pd
 import pytest
-from pandera.errors import SchemaError, SchemaErrors  # pylint: disable=import-error
+from pandera.errors import SchemaError, SchemaErrors
 
 from app.domain.exceptions import NoTrainingSchemaError
 from app.domain.schema_validator import SchemaValidator
