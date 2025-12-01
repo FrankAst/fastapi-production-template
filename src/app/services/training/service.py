@@ -8,6 +8,7 @@ from sklearn.preprocessing import StandardScaler
 
 from app.domain import MLModel, SchemaValidator
 from app.services.helper import load_model, save_model
+from app.services.processing.service import ProcessingService
 from app.settings import Settings
 
 
@@ -41,6 +42,9 @@ class TrainingService(BaseModel):
         """
         # Generate and save schema from training data (features only)
         SchemaValidator.infer_and_save_schema(df)
+
+        # Preprocess data
+        df = ProcessingService.preprocess(df)
 
         # Split features and target
         X = df.iloc[:, :-1]  # Features as DataFrame
