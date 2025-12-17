@@ -1,420 +1,621 @@
-% !TEX spellcheck = es-ES
+\documentclass[12pt, a4paper]{report}
 
-% Plan de Trabajo de Tesis - Maestría en Ciencia de Datos
-\documentclass[11pt,a4paper]{article}
-
-% Packages
+% -----------------------------------------------------------
+% Paquetes base
+% -----------------------------------------------------------
 \usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
 \usepackage[spanish]{babel}
-\usepackage[margin=1in]{geometry}
-\usepackage[style=apa,backend=biber]{biblatex}
-\addbibresource{referencias.bib}
-\usepackage{booktabs}
-\usepackage{longtable}
-\usepackage{array}
-\usepackage{hyperref}
-\usepackage{xcolor}
-\usepackage{listings}
+\usepackage{libertinus}  % Tipografía similar a la del PDF
+\usepackage{setspace}
+\usepackage{geometry}
 \usepackage{graphicx}
 \usepackage{fancyhdr}
-\usepackage{amssymb}
-\usepackage{amsmath}
+\setlength{\headheight}{14.5pt}
 \usepackage{titlesec}
+%\usepackage{hyperref}
+%\usepackage{url}
+\usepackage{booktabs}
 \usepackage{float}
-\usepackage{caption}
-\usepackage{subcaption}
 
-% Hyperref setup
-\hypersetup{
-    colorlinks=true,
-    linkcolor=blue,
-    filecolor=magenta,
-    urlcolor=cyan,
-    pdftitle={Plan de Trabajo de Tesis - Maestría en Ciencia de Datos},
-    pdfauthor={Franco Astegiano},
+% -----------------------------------------------------------
+% Bibliografía
+% -----------------------------------------------------------
+
+\usepackage[round]{natbib}
+%\usepackage[hidelinks]{hyperref}
+\usepackage{hyperref}
+\usepackage{url}
+
+% Interlineado
+\onehalfspacing
+
+% Márgenes
+\geometry{
+    left=3cm,
+    right=2.5cm,
+    top=2.5cm,
+    bottom=2.5cm
 }
 
-% Page style
+% -----------------------------------------------------------
+% CONFIGURACIÓN DE ENCABEZADOS Y PIE
+% -----------------------------------------------------------
+% Header & footer default
 \pagestyle{fancy}
 \fancyhf{}
-\rhead{Plan de Tesis}
-\lhead{Maestría en Ciencia de Datos}
-\cfoot{\thepage}
+\fancyhead[L]{Plan de Trabajo Final} % header izquierdo
+\renewcommand{\headrulewidth}{0.4pt}
 
-% Code listings setup
-\lstset{
-    language=Python,
-    basicstyle=\ttfamily\small,
-    keywordstyle=\color{blue},
-    commentstyle=\color{gray},
-    stringstyle=\color{red},
-    showstringspaces=false,
-    breaklines=true,
-    frame=single,
-    numbers=left,
-    numberstyle=\tiny\color{gray}
-}
+% Page number centered at bottom
+\fancyfoot[C]{\thepage}
+\renewcommand{\footrulewidth}{0pt}
 
-% Title setup
-\title{\textbf{Plan de Trabajo de Tesis}\\
-\Large{Maestría en Ciencia de Datos}\\
-\vspace{0.5cm}
-\large{[Título de la Tesis]}}
-\author{Estudiante: Franco Astegiano\\
-Director: [Nombre del Director]\\
-Codirector: [Nombre del Codirector (si aplica)]}
-\date{\today}
+% Hacemos que las páginas 'plain' (las que genera \chapter) usen fancy
+\makeatletter
+\let\ps@plain\ps@fancy
+\makeatother
 
+% -----------------------------------------------------------
+% Numeración profunda (idéntica al PDF)
+% -----------------------------------------------------------
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{4}
+
+% Títulos
+\titleformat{\chapter}{\Large\bfseries}{\thechapter.}{1em}{}
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{\thesubsubsection}{1em}{}
+
+
+
+% -----------------------------------------------------------
+% DOCUMENTO
+% -----------------------------------------------------------
 \begin{document}
 
-\maketitle
+% ===========================================================
+% PORTADA
+% ===========================================================
+\begin{titlepage}
+    \centering
+
+    \vspace*{-1cm}
+    \includegraphics[width=0.6\textwidth]{logo.png}
+
+    \vspace{2cm}
+
+    {\Huge \textbf{MAESTRÍA EN EXPLOTACIÓN\\
+    DE DATOS Y GESTIÓN DEL\\
+    CONOCIMIENTO}\par}
+
+    \vspace{2cm}
+
+    {\Large \textbf{Plan de Trabajo Final}\par}
+
+    \vspace{2cm}
+
+    {\large Desarrollo de una herramienta de detección de diabetes basada en Machine Learning para entornos de atención primaria\par}
+
+    \vspace{2cm}
+
+    \begin{tabular}{@{} l l @{}}
+        \textbf{Alumno:} & Astegiano Franco \\
+        \textbf{Directora:} & Fernanda Mendez \\
+        \textbf{Tutores:} & \parbox[t]{7cm}{Heis Leonardo\\Castaño Ezequiel\\Farina Juan José}
+    \end{tabular}
+
+    \thispagestyle{empty} % sin header/numero en portada
+\end{titlepage}
 
 \newpage
+
+% Índice sin header ni número de página
+\pagestyle{empty}
 \tableofcontents
 \newpage
 
-% =============================================================================
-\section{Información General}
+% Recuperamos encabezado y pie (header en todas las páginas, número abajo centro)
+\pagestyle{fancy}
 
-\subsection{Datos del Estudiante}
+% ===========================================================
+% 1. RESÚMEN
+% ===========================================================
+\chapter{Resumen}
+
+La diabetes tipo 2 representa una de las principales causas de morbilidad y mortalidad a nivel mundial, con una proporción significativa de casos que permanecen sin diagnosticar hasta la aparición de complicaciones severas. En Argentina, múltiples barreras del sistema de salud —incluyendo accesibilidad inadecuada y falta de recursos en atención primaria— contribuyen a que muchos pacientes permanezcan sin diagnóstico oportuno \citep{belizan2020barriers}. \\
+El presente trabajo tiene como objetivo desarrollar un sistema predictivo de machine learning para la detección de diabetes y prediabetes utilizando exclusivamente variables obtenibles mediante encuestas y mediciones físicas básicas, sin requerir análisis de laboratorio. Se emplearán datos de la encuesta NHANES 2021-2023, específicamente variables demográficas, antropométricas, de presión arterial y hábitos de vida.\\
+La metodología incluye la implementación de algoritmos basados en árboles (LightGBM, XGBoost, Random Forest), optimización bayesiana de hiperparámetros con Optuna\footnote{Optuna es un framework de optimización de hiperparámetros}, y seguimiento de experimentos con Weights \& Biases\footnote{Weights \& Biases es una herramienta de MLOps para seguimiento de experimentos, gestión de modelos y trazabilidad en proyectos de aprendizaje automático.}. A diferencia de propuestas puramente académicas, este trabajo contempla la productivización completa del modelo mediante una API REST con interfaz gráfica, desarrollada bajo tutoría de PwC siguiendo estándares profesionales de la industria. La interfaz incorporará visualización de valores SHAP junto con probabilidades e intervalos de confianza, priorizando la interpretabilidad sobre predicciones del estilo caja negra.\\
+\\
+\textbf{Palabras clave:} aprendizaje automático, detección temprana, diabetes mellitus, interpretabilidad, LightGBM, NHANES, productivización, screening, SHAP
+
+% ===========================================================
+% 2. MOTIVACIÓN
+% ===========================================================
+\chapter{Motivación}
+
+\section{Motivación y Relevancia del Tema de Estudio}
+
+\subsection{¿Por qué razón el tema se considera de interés?}
+
+La diabetes mellitus tipo 2 (DM2) representa una de las emergencias sanitarias más significativas del siglo XXI. Según la Federación Internacional de Diabetes, 589 millones de adultos viven con diabetes a nivel global, cifra que se proyecta alcanzará los 853 millones para 2050 \citep{idf2025atlas}. Un factor alarmante es que aproximadamente 252 millones de estas personas —más del 40\% del total— desconocen su condición, exponiéndose a complicaciones graves y muerte prematura.
+
+En Argentina, la situación presenta características particularmente preocupantes. Estudios recientes indican que la prevalencia de enfermedad cardiovascular en pacientes con DM2 alcanza el 41.5\%, superando el promedio global de 34.8\%, con un retraso diagnóstico de hasta 7 años desde la aparición de la hiperglucemia \citep{dieuzeide2025impacto}. El impacto económico resulta sustancial: mientras el costo anual del seguimiento de un paciente sin complicaciones ronda los USD 1,774, las complicaciones cerebrovasculares y cardiovasculares multiplican este valor hasta 47.8 y 9.9 veces respectivamente. A nivel global, el gasto en salud relacionado con diabetes superó el billón de dólares en 2024 \citep{idf2025atlas}.
+
+Esta carga económica no recae únicamente sobre los sistemas de salud. El gasto de bolsillo representa aproximadamente el 9\% del ingreso familiar mensual en pacientes argentinos, siendo el impacto desproporcionadamente mayor en poblaciones sin cobertura de obra social \citep{linari2019calidad}.
+
+\subsection{¿Cuáles serán los beneficios que se espera de la solución propuesta?}
+
+El desarrollo de una herramienta de screening basada en aprendizaje automático ofrece múltiples beneficios. En primer lugar, la detección temprana permite implementar intervenciones preventivas antes de que se desarrollen complicaciones costosas e irreversibles. Como señalan Dieuzeide et al., ``una inversión inicial en la prevención y el tratamiento precoz podría resultar en un ahorro significativo, minimizando el costo de oportunidad asociado con tratamientos más complejos'' \citep{dieuzeide2025impacto}. La liberación de estos recursos permitiría enfocar esfuerzos en otras prioridades sanitarias.
+
+En segundo lugar, el despliegue de esta herramienta en farmacias y centros de atención primaria rurales busca democratizar el acceso al screening. Una herramienta que utilice variables recolectables sin análisis de laboratorio invasivos podría alcanzar poblaciones que actualmente permanecen sin diagnosticar.
+
+Finalmente, el énfasis en la interpretabilidad del modelo distingue esta propuesta de aproximaciones puramente predictivas, permitiendo que tanto profesionales de salud como usuarios comprendan los factores que contribuyen a su nivel de riesgo \citep{li2024diabetes}.
+
+
+% ===========================================================
+% 3. REQUERIMIENTOS Y DESAFÍOS
+% ===========================================================
+\chapter{Requerimientos y desafíos}
+
+
+\section{¿Cómo se ha resuelto este problema en otras partes?}
+
+La predicción de diabetes mediante aprendizaje automático es una temática muy presente en la investigación de prevención y detección temprana de enfermedades. Qin et al.\ desarrollaron modelos predictivos utilizando datos de NHANES 1999--2020 con variables de estilo de vida, comparando cinco algoritmos donde CATBoost alcanzó un AUC de 83\% empleando 18 variables demográficas y conductuales \citep{qin2022machine}. Zhang et al.\ propusieron un modelo de stacking que combina GA-XGBoost con LightGBM, logrando un AUC de 98.90\% mediante optimización genética de hiperparámetros e interpretabilidad con valores SHAP \citep{li2024diabetes}. Rufo et al.\ demostraron la efectividad de LightGBM para diagnóstico de diabetes en contextos de recursos limitados, alcanzando 98.1\% de accuracy \citep{rufo2021diagnosis}. Elgendy et al.\ presentaron un modelo de stacking de dos etapas con énfasis en explicabilidad, donde Extra Trees tuvo el mayor impacto en las decisiones del meta-modelo \citep{elgendy2025dual}. Cabe destacar que tanto Zhang et al.\ como Elgendy et al.\ optan por arquitecturas de ensemble tipo stacking, combinando múltiples modelos base para mejorar la capacidad predictiva.
+
+Sin embargo, se observan limitaciones recurrentes en estos trabajos. Numerosos estudios emplean datasets pequeños como Pima Indians Diabetes (768 registros), insuficientes para entrenar modelos complejos sin incurrir en overfitting. Adicionalmente, varios trabajos aplican técnicas de preprocesamiento —normalización, imputación de valores faltantes, selección de features basada en correlaciones lineales— que resultan innecesarias para algoritmos gradient boosting, los cuales manejan nativamente relaciones no lineales, diferencias en escalas y nulos.
+
+\section{¿Cuál es la utilidad concreta que se espera de la solución propuesta?}
+
+La herramienta propuesta permitirá realizar screening de diabetes y prediabetes en entornos donde las pruebas de laboratorio no están disponibles, utilizando exclusivamente variables recolectables mediante cuestionarios y mediciones físicas básicas. Su despliegue en farmacias y centros de atención primaria/rurales facilitará la identificación temprana de individuos en riesgo, derivándolos oportunamente para confirmación clínica. La provisión de probabilidades con intervalos de confianza y valores SHAP, en lugar de clasificaciones binarias, permitirá a los profesionales de salud tomar decisiones informadas según el contexto de cada paciente.
+
+\section{Requerimientos y Desafíos del proyecto}
+
+Los requerimientos y desafíos más relevantes en la elaboración del proyecto son:
+
 \begin{itemize}
-    \item \textbf{Nombre completo:} Franco Astegiano
-    \item \textbf{Carrera:} Maestría en Ciencia de Datos
-    \item \textbf{Universidad:} [Nombre de la Universidad]
-    \item \textbf{Correo electrónico:} [correo@ejemplo.com]
-    \item \textbf{Fecha de inicio del plan:} [Fecha]
+    \item \textbf{Construcción del dataset a partir de NHANES:} La encuesta NHANES provee datos en múltiples tablas separados por dominio (demográficos, mediciones corporales, presión arterial, cuestionarios de hábitos). El armado de un dataset unificado requiere integrar estas fuentes, identificar variables clínicamente relevantes que no dependan de análisis de laboratorio, y manejar la estructura de muestreo complejo propia de encuestas poblacionales.
+
+    \item \textbf{Selección de métricas apropiadas para screening:} En aplicaciones de screening médico, la selección de métricas debe priorizar la sensibilidad para minimizar falsos negativos, dado que un caso no detectado tiene consecuencias más graves que una derivación innecesaria. Esto implica evaluar no solo \textit{accuracy}, sino también \textit{recall}, AUC-ROC y especificidad.
+
+    \item \textbf{Manejo del desbalance de clases:} El dataset presenta una proporción aproximada de 1:5 entre casos positivos (diabetes/prediabetes) y negativos. Este desbalance debe abordarse mediante estrategias que no distorsionen la distribución original de los datos.
+
+    \item \textbf{Interpretabilidad del modelo:} En contextos de salud, las predicciones de caja negra resultan poco útiles. El modelo debe proveer explicaciones comprensibles sobre los factores que contribuyen al riesgo de cada individuo.
 \end{itemize}
 
-\subsection{Información del Director}
+
+% ===========================================================
+% 4. PROBLEMAS NO RESUELTOS
+% ===========================================================
+\chapter{Problemas no resueltos}
+
+A pesar de los avances en la detección de diabetes, más del 40\% de los casos a nivel mundial permanecen sin diagnosticar, concentrándose predominantemente en países de ingresos bajos y medios \citep{idf2025atlas}. Esta brecha evidencia la necesidad de herramientas de screening más accesibles y efectivas. Entre los problemas no resueltos que afectan la detección temprana pueden mencionarse:
+
 \begin{itemize}
-    \item \textbf{Nombre:} [Nombre completo]
-    \item \textbf{Institución:} [Institución]
-    \item \textbf{Correo electrónico:} [correo@ejemplo.com]
-    \item \textbf{Área de especialización:} [Área]
+    \item \textbf{Herramientas de screening basadas en puntajes fijos:} Las herramientas de evaluación de riesgo más utilizadas —FINDRISC, ADA Risk Test, AUSDRISK, Cambridge Risk Score— utilizan cuestionarios con puntajes predefinidos que aplican reglas lineales a un conjunto de variables \citep{lindstrom2003findrisc, chen2010ausdrisk}. Estas aproximaciones no capturan interacciones complejas entre factores de riesgo, limitando su capacidad predictiva. Presentan \textit{trade-offs} importantes entre sensibilidad y especificidad: herramientas como el ADA Risk Test alcanzan alta sensibilidad (93\%) pero con especificidad muy baja (17\%), generando excesivos falsos positivos \citep{vanderwood2015evaluation}.
+
+    \item \textbf{Ausencia de explicabilidad en las predicciones:} Las herramientas actuales proveen únicamente una categoría de riesgo (bajo, medio, alto) sin indicar qué factores específicos contribuyen al nivel de riesgo de cada individuo. Esta falta de transparencia dificulta tanto la comprensión del paciente sobre su situación como la toma de decisiones clínicas informadas por parte del profesional de salud.
+
+    \item \textbf{Baja adopción de herramientas existentes:} Incluso cuando existen herramientas validadas, su adopción en la práctica clínica es limitada. Un estudio en Australia reveló que dos años después del lanzamiento de AUSDRISK, solo el 23\% de los médicos de atención primaria conocían la herramienta y apenas el 14\% la aplicaba en su práctica habitual \citep{wong2011ausdrisk}. Esta baja penetración sugiere la necesidad de herramientas más accesibles e integradas en los flujos de trabajo clínicos, particularmente en farmacias comunitarias y centros de atención primaria en zonas rurales.
+\end{itemize}
+% ===========================================================
+% 5. SOLUCIÓN PROPUESTA
+% ===========================================================
+\chapter{Solución propuesta}
+
+Se propone el desarrollo de una herramienta de screening de diabetes y prediabetes basada en aprendizaje automático, desplegable en farmacias comunitarias y centros de atención primaria. Para lograr este objetivo, se tendrán en cuenta los siguientes puntos:
+
+\begin{itemize}
+    \item \textbf{Datos de entrenamiento:} Se utilizarán datos de la encuesta NHANES (National Health and Nutrition Examination Survey) ciclo 2021--2023, que provee información representativa de la población adulta estadounidense. Las tablas incluyen variables demográficas, mediciones antropométricas, presión arterial y cuestionarios de hábitos de vida (actividad física, consumo de alcohol, tabaquismo), excluyendo deliberadamente variables que requieran análisis de laboratorio.
+
+    \item \textbf{Modelado:} Se emplearán algoritmos de \textit{gradient boosting} (LightGBM como modelo principal, con XGBoost y Random Forest como comparación) que manejan nativamente valores faltantes y desbalance de clases. La optimización de hiperparámetros se realizará mediante Optuna con validación cruzada, priorizando métricas relevantes para screening como \textit{recall} y AUC-ROC. Se evaluarán diferentes arquitecturas de ensembles, y se registrarán los entrenamientos en Weights \& Biases.
+
+    \item \textbf{Interpretabilidad:} El modelo proveerá explicaciones individualizadas mediante \textit{SHAP values}, indicando qué factores contribuyen al nivel de riesgo de cada persona. Adicionalmente, se entregarán probabilidades junto con intervalos de confianza en lugar de clasificaciones binarias.
+
+    \item \textbf{Despliegue:} La solución se implementará en Render\footnote{Render es una plataforma de despliegue en la nube que permite alojar aplicaciones, APIs y servicios con integración continua.}
+    como aplicación con interfaz gráfica y API REST siguiendo estándares de industria, permitiendo su integración en sistemas de farmacias o aplicaciones móviles para uso en puntos de atención primaria.
+
+    \item \textbf{Limitaciones:} El modelo estará entrenado con datos de población estadounidense, lo cual puede afectar su \textit{performance} en otras poblaciones. \\
+
+    \item \textbf{Ampliaciones futuras:} El pipeline permitirá reentrenamiento con datos de otras poblaciones cuando estén disponibles. Se contempla la incorporación de variables adicionales como indicadores de salud mental, dado que la literatura reporta relaciones bidireccionales entre depresión y diabetes.
+
 \end{itemize}
 
-\subsection{Información del Codirector (si aplica)}
+
+% ===========================================================
+% 6. OBJETIVO DEL TRABAJO
+% ===========================================================
+
+\chapter{Grado de innovación}
+
+A continuación, se mencionan los puntos que representan un enfoque diferenciador en la propuesta tecnológica:
+
+\subsection*{Orientación a despliegue productivo}
+
+La literatura académica en predicción de diabetes se centra predominantemente en el entrenamiento y comparación de modelos, reportando métricas sobre datasets de prueba \citep{qin2022machine, li2024diabetes}. Sin embargo, raramente se aborda el despliegue de los modelos como aplicaciones utilizables en entornos reales. La presente propuesta prioriza la construcción de una herramienta productiva, con interfaz gráfica, API REST documentada, pipeline de reentrenamiento, y estándares de desarrollo de software (integración continua, testing, control de calidad de código).
+
+\subsection*{Herramienta accesible para atención primaria}
+
+Las herramientas de screening existentes como FINDRISC o AUSDRISK, aunque validadas, presentan baja adopción en la práctica clínica \citep{wong2011ausdrisk}. La propuesta busca reducir barreras de adopción mediante una interfaz simple desplegable en farmacias comunitarias y centros de salud rurales, donde el acceso a pruebas de laboratorio es limitado.
+
+\subsection*{Interpretabilidad integrada}
+
+A diferencia de las herramientas tradicionales que proveen únicamente categorías de riesgo, y de modelos de ML que operan como cajas negras, la solución integra explicaciones individualizadas mediante SHAP values. Esto permite que tanto el profesional de salud como el paciente comprendan qué factores contribuyen al riesgo estimado, facilitando intervenciones preventivas focalizadas.
+
+\subsection*{Pipeline reproducible y adaptable}
+
+El diseño del pipeline permite reentrenamiento con datos de otras poblaciones, abordando la limitación inherente de que los modelos son específicos a la población de entrenamiento.
+
+% ===========================================================
+% 7. OBJETIVO DEL TRABAJO
+% ===========================================================
+\chapter{Objetivo del trabajo}
+
+
+\subsection*{Objetivo general}
+
+Desarrollar una herramienta de screening de diabetes y prediabetes basada en aprendizaje automático, utilizando exclusivamente variables no invasivas, desplegable en farmacias comunitarias y centros de atención primaria.
+
+\subsection*{Objetivos específicos}
+
 \begin{itemize}
-    \item \textbf{Nombre:} [Nombre completo]
-    \item \textbf{Institución:} [Institución]
-    \item \textbf{Correo electrónico:} [correo@ejemplo.com]
-    \item \textbf{Área de especialización:} [Área]
+    \item Construir un dataset integrado a partir de las encuestas NHANES 2021--2023, seleccionando variables demográficas, antropométricas, de presión arterial y hábitos de vida relevantes para la predicción de diabetes.
+
+    \item Entrenar y optimizar modelos de gradient boosting (LightGBM, XGBoost, Random Forest) y ensembles, evaluando su performance mediante métricas apropiadas para screening (recall, AUC-ROC, F1 score).
+
+    \item Desarrollar una API REST que exponga el modelo para su integración en aplicaciones de screening, siguiendo estándares de ingeniería de software (testing, documentación, integración continua).
+
+    \item Documentar el pipeline completo para facilitar el reentrenamiento del modelo con datos de otras poblaciones.
+
+    \item Implementar explicabilidad del modelo mediante SHAP values, permitiendo identificar los factores que contribuyen al riesgo de cada individuo.
+
+    \item Desplegar la aplicación productiva en RENDER, para su correcta demostración en vivo.
+
 \end{itemize}
 
-% =============================================================================
-\section{Resumen}
+
+% ===========================================================
+% 8. TRANSFERENCIA DE RESULTADOS OBTENIDOS
+% ===========================================================
+\chapter{Transferencia de resultados obtenidos}
+
+La solución propuesta presenta varias oportunidades de transferencia a ámbitos más amplios:
+
+\subsection*{Adaptación a otras poblaciones}
+
+La arquitectura del sistema —integración de servicios, API REST, frontend, mecanismos de interpretabilidad— está diseñada para ser reutilizable. Sin embargo, la adaptación a datos de otras encuestas poblacionales (como la Encuesta Nacional de Nutrición y Salud en Argentina) requeriría ajustes en el preprocesamiento según el formato de origen de los datos, las variables disponibles, y las particularidades de cada población. El valor transferible es el enfoque arquitectónico y metodológico, pero para cada dataset, se requerirá un modelado -posiblemente- diferente.
+
+\subsection*{Extensión a otras condiciones crónicas}
+
+El enfoque de screening basado en variables no invasivas es transferible a otras enfermedades crónicas con factores de riesgo compartidos, como hipertensión, síndrome metabólico, riesgo cardiovascular e incluso lesiones musculares. La arquitectura modular permite adaptar el pipeline modificando las variables de entrada, el \textit{target} de predicción y el entrenamiento.
+
+\subsection*{Despliegue en otros entornos de atención primaria}
+
+Además de farmacias comunitarias y centros de salud rurales, la herramienta podría integrarse en programas de medicina laboral, campañas de salud pública, o aplicaciones móviles de autoevaluación para concientización poblacional.
+
+% ===========================================================
+% 9. Trabajos relacionados
+% ===========================================================
+
+\chapter{Trabajos relacionados}
+
+\section{Problema central}
+
+La predicción de diabetes tipo 2 mediante técnicas de aprendizaje automático ha sido extensamente abordada en la literatura reciente. Dinh et al.\ desarrollaron un modelo de conjunto ponderado utilizando datos de NHANES, demostrando que es posible alcanzar un AUC de 0.862 empleando exclusivamente variables de encuesta sin resultados de laboratorio, valor que incrementa a 0.957 al incorporar marcadores bioquímicos \citep{dinh2019data}. Qin et al.\ entrenaron cinco modelos sobre NHANES 1999--2020 con variables de estilo de vida, donde CATBoost alcanzó el mejor desempeño con un AUC de 0.83 utilizando 18 variables demográficas y conductuales \citep{qin2022machine}. Li et al.\ propusieron un modelo de stacking que integra GA-XGBoost y LightGBM sobre el dataset BRFSS (Behavioral Risk Factor Surveillance System), logrando un AUC de 0.989 mediante optimización con algoritmos genéticos \citep{li2024diabetes}. Vangeepuram et al.\ exploraron la predicción en población joven (12--19 años) utilizando NHANES, evidenciando que los clasificadores de machine learning superan las guías clínicas tradicionales de screening pediátrico \citep{vangeepuram2021predicting}.
+
+El presente trabajo aborda el mismo problema central, diferenciándose por el uso de datos más recientes (NHANES 2021--2023), la implementación de optimización bayesiana mediante Optuna, la evaluación comparativa de diferentes estrategias de ensamble (stacking, voting, bagging), y el desarrollo de una aplicación desplegable en entornos de producción.
+
+\section{Problemas relacionados}
+
+Diversas herramientas de screening no invasivo han sido desarrolladas para la detección temprana de diabetes en entornos clínicos. Lindström y Tuomilehto desarrollaron FINDRISC (Finnish Diabetes Risk Score), un cuestionario de ocho preguntas que evalúa el riesgo a diez años basándose en edad, IMC, circunferencia de cintura, actividad física, consumo de vegetales, uso de antihipertensivos, historial de glucemia elevada e historia familiar, alcanzando un AUC de 0.85 en la población finlandesa \citep{lindstrom2003findrisc}. Chen et al.\ adaptaron este enfoque para la población australiana mediante AUSDRISK, incorporando variables étnicas y de país de nacimiento relevantes para contextos multiculturales \citep{chen2010ausdrisk}. En un problema relacionado, Xu et al.\ desarrollaron un modelo de predicción de riesgo cardiovascular específico para pacientes con diabetes tipo 2 utilizando NHANES, alcanzando un AUC de 0.72 e identificando HbA1c, eGFR y colesterol LDL como predictores clave \citep{xu2024development}.
+
+Sin embargo, estas herramientas presentan limitaciones significativas. Vangeepuram et al.\ reportaron que las guías clínicas de screening pediátrico alcanzan una sensibilidad de apenas 43.1\%, lo que implica que más de la mitad de los casos positivos no son detectados, generando una elevada tasa de falsos negativos \citep{vangeepuram2021predicting}. Wong et al.\ documentaron baja adopción de cuestionarios de riesgo en atención primaria debido a restricciones de tiempo y falta de integración con sistemas electrónicos de salud \citep{wong2011ausdrisk}.
+
+El presente trabajo propone superar estas limitaciones mediante un modelo optimizado para maximizar el \textit{recall} en contextos de screening. La solución se implementa como una aplicación accesible donde el profesional de salud ingresa valores de mediciones físicas (peso, altura, presión arterial, circunferencia de cintura) y respuestas a cuestionarios de estilo de vida, obteniendo como resultado una probabilidad de riesgo junto con explicaciones en lenguaje coloquial basadas en valores SHAP, facilitando la comunicación con el paciente sobre los factores que influyen en su perfil de riesgo individual.
+
+\section{Identificación del problema}
+
+La carga global de diabetes no diagnosticada constituye un desafío significativo para los sistemas de salud. Según la International Diabetes Federation, 589 millones de adultos viven con diabetes a nivel mundial, de los cuales aproximadamente 252 millones (42.8\%) permanecen sin diagnóstico, lo que representa un gasto sanitario superior a un billón de dólares anuales \citep{idf2025atlas}. En Argentina, Dieuzeide et al.\ demostraron que el costo de atención de pacientes con complicaciones puede alcanzar hasta 47.8 veces el costo de pacientes sin complicaciones, evidenciando el impacto económico de la detección tardía \citep{dieuzeide2025impacto}. Linari et al.\ documentaron que el gasto de bolsillo representa aproximadamente el 9\% del ingreso familiar en pacientes diabéticos argentinos, afectando significativamente su calidad de vida \citep{linari2019calidad}. Belizán et al.\ identificaron barreras estructurales para el diagnóstico oportuno en Argentina, incluyendo inequidades geográficas en el acceso a servicios de salud y limitaciones en la disponibilidad de pruebas de laboratorio en zonas rurales \citep{belizan2020barriers}.
+
+El presente trabajo responde a esta problemática mediante el desarrollo de una herramienta de screening que no requiere análisis de laboratorio, facilitando su implementación en farmacias comunitarias y centros de salud con recursos limitados.
+
+\section{Misma metodología}
+
+Investigaciones recientes han explorado la aplicación de algoritmos de \textit{gradient boosting} con técnicas avanzadas de optimización para la predicción de diabetes. Shao et al.\ combinaron LightGBM con optimización bayesiana mediante Optuna, alcanzando una precisión del 97.11\% tras aplicar balanceo de datos con SMOTE y RUS \citep{shao2024optimization}. Khurshid et al.\ demostraron que la optimización bayesiana supera significativamente a \textit{grid search} tradicional en el ajuste de hiperparámetros de XGBoost \citep{khurshid2025unveiling}. Semerdjian y Frank entrenaron un ensemble de cinco clasificadores sobre NHANES con 16 variables no invasivas, obteniendo un AUC de 0.834 y proponiendo el ajuste del umbral de decisión de 0.5 a 0.78 para maximizar la sensibilidad en contextos de screening \citep{semerdjian2017ensemble}. Xu et al.\ emplearon el algoritmo Boruta para selección de variables y XGBoost con validación cruzada, logrando un AUC de 0.72 en la predicción de riesgo cardiovascular en pacientes diabéticos \citep{xu2024development}.
+
+No obstante, se identifican aspectos metodológicos que merecen análisis. Varios estudios emplean datasets reducidos como Pima Indians Diabetes (768 registros), insuficientes para entrenar modelos complejos sin incurrir en sobreajuste \citep{jena2021novel, talari2022hybrid}. Es frecuente la aplicación de normalización o estandarización sobre variables procesadas posteriormente por algoritmos basados en árboles, los cuales son inherentemente invariantes a escala \citep{shao2024optimization, li2024diabetes}. Asimismo, algunos trabajos realizan selección de variables mediante métodos lineales como la correlación de Pearson, descartando interacciones no lineales que los modelos basados en árboles pueden capturar.
+
+Respecto al preprocesamiento, la mayoría de los trabajos revisados aplican imputación de valores faltantes y técnicas de sobremuestreo como SMOTE para el balanceo de clases. El presente trabajo evaluará experimentalmente el aporte real de estas técnicas frente al manejo nativo que ofrecen los algoritmos de \textit{gradient boosting}, dado que LightGBM y XGBoost pueden aprender direcciones óptimas de partición para valores faltantes y manejar el desbalance mediante parámetros como \texttt{is\_unbalance} y \texttt{scale\_pos\_weight}. Adicionalmente, se emplearán datos de NHANES 2021--2023 y se implementará una API con estándares de producción y explicaciones interpretables mediante SHAP.
 
 
 
-% =============================================================================
-\section{Introducción}
 
-\subsection{Contexto y Motivación}
-[Descripción del contexto general del problema y la motivación para realizar esta investigación.]
+% ===========================================================
+% 10. METODOLOGÍA
+% ===========================================================
 
-\subsection{Planteamiento del Problema}
-[Descripción clara y precisa del problema que se abordará en la tesis.]
+\chapter{Metodología}
 
-\subsection{Justificación}
-[Explicación de la importancia y relevancia del problema, tanto desde el punto de vista académico como práctico.]
+\section{Tipo de estudio}
 
-\subsection{Alcance}
-[Definición clara de lo que incluirá y no incluirá el proyecto de tesis.]
+El presente trabajo corresponde a un estudio observacional retrospectivo de corte transversal, basado en el análisis secundario de datos de encuestas poblacionales. Se emplearán técnicas de aprendizaje automático supervisado para desarrollar un modelo predictivo de clasificación binaria orientado a la detección de diabetes y prediabetes.
 
-% =============================================================================
-\section{Marco Teórico}
+\section{Emplazamiento}
 
-\subsection{Conceptos Fundamentales}
-[Definición de los conceptos clave necesarios para entender el proyecto.]
+El estudio se desarrollará en el marco de la Maestría en Explotación de Datos y Gestión del Conocimiento de la Universidad Austral, en colaboración con PwC Argentina. Los datos provienen de la encuesta NHANES (National Health and Nutrition Examination Survey), conducida por el Centro Nacional de Estadísticas de Salud (NCHS) de los Estados Unidos, con cobertura nacional representativa de la población civil no institucionalizada.
 
-\subsection{Estado del Arte}
-[Revisión de la literatura existente y trabajos relacionados.]
+\section{Población, criterios de inclusión y exclusión}
 
-\subsection{Herramientas y Tecnologías}
-[Descripción de las herramientas, tecnologías y frameworks que se utilizarán.]
+\textbf{Población objetivo:} Adultos de 18 años o más participantes del ciclo NHANES 2021--2023 (agosto 2021 -- agosto 2023).
 
-% =============================================================================
-\section{Objetivos}
-
-\subsection{Objetivo General}
-[Objetivo principal de la tesis, debe ser claro, específico y alcanzable.]
-
-\subsection{Objetivos Específicos}
-\begin{enumerate}
-    \item [Objetivo específico 1]
-    \item [Objetivo específico 2]
-    \item [Objetivo específico 3]
-    \item [Objetivo específico 4]
-    \item [Objetivo específico 5]
-\end{enumerate}
-
-% =============================================================================
-\section{Metodología}
-
-\subsection{Enfoque Metodológico}
-[Descripción del enfoque general que se utilizará para abordar el problema.]
-
-\subsection{Fases del Proyecto}
-
-\subsubsection{Fase 1: [Nombre de la Fase]}
+\subsection*{Criterios de inclusión}
 \begin{itemize}
-    \item \textbf{Descripción:} [Descripción detallada]
-    \item \textbf{Actividades:}
-    \begin{enumerate}
-        \item [Actividad 1]
-        \item [Actividad 2]
-        \item [Actividad 3]
-    \end{enumerate}
-    \item \textbf{Entregables:} [Lista de entregables]
-    \item \textbf{Duración estimada:} [X semanas/meses]
+    \item Participantes con datos completos en la variable objetivo (DIQ010: diagnóstico de diabetes)
+    \item Edad $\geq$ 18 años al momento del screening
 \end{itemize}
 
-\subsubsection{Fase 2: [Nombre de la Fase]}
+\subsection*{Criterios de exclusión}
 \begin{itemize}
-    \item \textbf{Descripción:} [Descripción detallada]
-    \item \textbf{Actividades:}
-    \begin{enumerate}
-        \item [Actividad 1]
-        \item [Actividad 2]
-        \item [Actividad 3]
-    \end{enumerate}
-    \item \textbf{Entregables:} [Lista de entregables]
-    \item \textbf{Duración estimada:} [X semanas/meses]
+    \item Participantes que rechazaron responder o indicaron ``no sabe'' en la pregunta de diagnóstico de diabetes (códigos 7 y 9)
+    \item Registros con valores faltantes en más del 50\% de las variables predictoras
+    \item Mujeres con diabetes gestacional (excluidas por definición en DIQ010)
 \end{itemize}
 
-\subsubsection{Fase 3: [Nombre de la Fase]}
-\begin{itemize}
-    \item \textbf{Descripción:} [Descripción detallada]
-    \item \textbf{Actividades:}
-    \begin{enumerate}
-        \item [Actividad 1]
-        \item [Actividad 2]
-        \item [Actividad 3]
-    \end{enumerate}
-    \item \textbf{Entregables:} [Lista de entregables]
-    \item \textbf{Duración estimada:} [X semanas/meses]
-\end{itemize}
+\textbf{Tamaño muestral estimado:} Aproximadamente 6{,}300 registros válidos tras aplicar los criterios de exclusión.
 
-\subsubsection{Fase 4: [Nombre de la Fase]}
-\begin{itemize}
-    \item \textbf{Descripción:} [Descripción detallada]
-    \item \textbf{Actividades:}
-    \begin{enumerate}
-        \item [Actividad 1]
-        \item [Actividad 2]
-        \item [Actividad 3]
-    \end{enumerate}
-    \item \textbf{Entregables:} [Lista de entregables]
-    \item \textbf{Duración estimada:} [X semanas/meses]
-\end{itemize}
+\textbf{Desbalance de clases:} Ratio aproximado 1:5 entre casos positivos (diabetes + prediabetes) y negativos.
 
-\subsection{Datos y Fuentes de Información}
-[Descripción de los datos que se utilizarán, sus fuentes y métodos de recolección.]
+\section{Variables}
 
-\subsection{Herramientas y Tecnologías}
-[Descripción detallada de las herramientas de software, librerías, frameworks y plataformas que se utilizarán.]
-
-\subsection{Métricas de Evaluación}
-[Definición de las métricas que se utilizarán para evaluar los resultados del proyecto.]
-
-% =============================================================================
-\section{Cronograma}
-
-\subsection{Planificación Temporal}
+\subsection{Variables sociodemográficas}
 
 \begin{table}[H]
 \centering
-\begin{tabular}{|l|c|c|c|c|c|c|}
-\hline
-\textbf{Actividad} & \textbf{Mes 1} & \textbf{Mes 2} & \textbf{Mes 3} & \textbf{Mes 4} & \textbf{Mes 5} & \textbf{Mes 6} \\
-\hline
-Revisión bibliográfica & X & X & & & & \\
-\hline
-Recolección de datos & & X & X & & & \\
-\hline
-Preprocesamiento & & & X & X & & \\
-\hline
-Desarrollo del modelo & & & & X & X & \\
-\hline
-Evaluación y validación & & & & & X & X \\
-\hline
-Redacción de tesis & & & X & X & X & X \\
-\hline
-Preparación defensa & & & & & & X \\
-\hline
+\begin{tabular}{ll}
+\toprule
+\textbf{Variable NHANES} & \textbf{Descripción} \\
+\midrule
+RIDAGEYR & Edad en años (top-coded a 80) \\
+RIAGENDR & Género (1 = Masculino, 2 = Femenino) \\
+RIDRETH3 & Raza/Etnia (6 categorías) \\
+DMDEDUC2 & Nivel educativo \\
+DMDHHSIZ & Tamaño del hogar \\
+DMDMARTZ & Estado civil \\
+\bottomrule
 \end{tabular}
-\caption{Cronograma general del proyecto de tesis}
 \end{table}
 
-\subsection{Hitos Principales}
-\begin{enumerate}
-    \item \textbf{[Nombre del Hito 1]:} [Descripción] - [Fecha]
-    \item \textbf{[Nombre del Hito 2]:} [Descripción] - [Fecha]
-    \item \textbf{[Nombre del Hito 3]:} [Descripción] - [Fecha]
-    \item \textbf{[Nombre del Hito 4]:} [Descripción] - [Fecha]
-    \item \textbf{[Nombre del Hito 5]:} [Descripción] - [Fecha]
-\end{enumerate}
+\subsection{Variables propias del estudio (predictores)}
 
-% =============================================================================
-\section{Recursos Necesarios}
-
-\subsection{Recursos Humanos}
-\begin{itemize}
-    \item \textbf{Estudiante:} Dedicación de [X] horas semanales
-    \item \textbf{Director:} [X] horas mensuales de supervisión
-    \item \textbf{Codirector:} [X] horas mensuales de supervisión (si aplica)
-    \item \textbf{Otros colaboradores:} [Descripción si aplica]
-\end{itemize}
-
-\subsection{Recursos Tecnológicos}
-\begin{itemize}
-    \item \textbf{Hardware:} [Descripción de computadoras, servidores, GPU, etc.]
-    \item \textbf{Software:} [Lista de software y licencias necesarias]
-    \item \textbf{Infraestructura:} [Cloud computing, almacenamiento, etc.]
-\end{itemize}
-
-\subsection{Recursos Financieros}
-\begin{table}[H]
-\centering
-\begin{tabular}{|l|r|}
-\hline
-\textbf{Concepto} & \textbf{Costo Estimado} \\
-\hline
-Licencias de software & \$[XX, XXX] \\
-\hline
-Servicios cloud & \$[XX, XXX] \\
-\hline
-Bibliografía & \$[XX, XXX] \\
-\hline
-Otros gastos & \$[XX, XXX] \\
-\hline
-\textbf{Total} & \textbf{\$[XX, XXX]} \\
-\hline
-\end{tabular}
-\caption{Presupuesto estimado del proyecto}
-\end{table}
-
-\subsection{Acceso a Datos}
-[Descripción de cómo se obtendrá acceso a los datos necesarios, incluyendo permisos y consideraciones éticas.]
-
-% =============================================================================
-\section{Resultados Esperados}
-
-\subsection{Contribuciones Científicas}
-[Descripción de las contribuciones que se espera hacer al campo de estudio.]
-
-\subsection{Productos Entregables}
-\begin{enumerate}
-    \item \textbf{Documento de Tesis:} [Descripción]
-    \item \textbf{Código Fuente:} [Descripción del repositorio y documentación]
-    \item \textbf{Datasets Procesados:} [Descripción]
-    \item \textbf{Modelos Entrenados:} [Descripción]
-    \item \textbf{Publicaciones:} [Artículos o conferencias planeadas]
-    \item \textbf{Otros:} [Aplicaciones, dashboards, APIs, etc.]
-\end{enumerate}
-
-\subsection{Impacto Esperado}
-[Descripción del impacto académico, práctico o social que se espera del proyecto.]
-
-% =============================================================================
-\section{Riesgos y Mitigación}
-
-\subsection{Identificación de Riesgos}
+\subsubsection{Mediciones antropométricas}
 
 \begin{table}[H]
 \centering
-\begin{tabular}{|p{4cm}|p{2cm}|p{2cm}|p{5cm}|}
-\hline
-\textbf{Riesgo} & \textbf{Probabilidad} & \textbf{Impacto} & \textbf{Estrategia de Mitigación} \\
-\hline
-[Riesgo 1] & Alta/Media/Baja & Alto/Medio/Bajo & [Estrategia] \\
-\hline
-[Riesgo 2] & Alta/Media/Baja & Alto/Medio/Bajo & [Estrategia] \\
-\hline
-[Riesgo 3] & Alta/Media/Baja & Alto/Medio/Bajo & [Estrategia] \\
-\hline
-[Riesgo 4] & Alta/Media/Baja & Alto/Medio/Bajo & [Estrategia] \\
-\hline
+\begin{tabular}{ll}
+\toprule
+\textbf{Variable NHANES} & \textbf{Descripción} \\
+\midrule
+BMXBMI & Índice de masa corporal (kg/m$^2$) \\
+BMXWAIST & Circunferencia de cintura (cm) \\
+BMXWT & Peso (kg) \\
+BMXHT & Altura (cm) \\
+\bottomrule
 \end{tabular}
-\caption{Matriz de riesgos del proyecto}
 \end{table}
 
-\subsection{Plan de Contingencia}
-[Descripción de acciones alternativas en caso de que los riesgos se materialicen.]
+\subsubsection{Presión arterial}
 
-% =============================================================================
-\section{Aspectos Éticos y Legales}
-
-\subsection{Consideraciones Éticas}
-[Discusión de las consideraciones éticas relacionadas con el uso de datos, privacidad, sesgo algorítmico, etc.]
-
-\subsection{Protección de Datos}
-[Descripción de cómo se protegerán los datos sensibles y se cumplirá con regulaciones como GDPR, etc.]
-
-\subsection{Propiedad Intelectual}
-[Clarificación sobre la propiedad del código, datos y resultados del proyecto.]
-
-% =============================================================================
-\section{Plan de Comunicación}
-
-\subsection{Reuniones de Seguimiento}
-[Frecuencia y formato de las reuniones con el director y co-director.]
-
-\subsection{Informes de Avance}
-[Calendario de informes de progreso que se entregarán.]
-
-\subsection{Presentaciones}
-[Presentaciones intermedias o en conferencias que se planean realizar.]
-
-\subsection{Publicaciones}
-[Plan para publicar resultados en revistas o conferencias.]
-
-% =============================================================================
-\section{Referencias}
-
-% Las referencias se gestionan en el archivo referencias.bib
-% Para citar en el texto usa: \cite{clave}, \textcite{clave}, \parencite{clave}
-% Ejemplos:
-% - Según \textcite{autor2023}, el modelo...
-% - Varios estudios \parencite{autor2023,autor2024} muestran...
-% - Como se menciona en la literatura \cite{autor2023}...
-
-\printbibliography[heading=none]
-
-% =============================================================================
-\section{Anexos}
-
-\subsection{Anexo A: Glosario de Términos}
-[Definición de términos técnicos utilizados en el documento.]
-
-\subsection{Anexo B: Detalles Técnicos Adicionales}
-[Información técnica complementaria que no se incluyó en el cuerpo principal.]
-
-\subsection{Anexo C: Cartas de Apoyo}
-[Cartas de instituciones o empresas que proporcionarán datos o recursos.]
-
-% =============================================================================
-\newpage
-\section*{Firmas de Aprobación}
-
-\vspace{2cm}
-
-\begin{center}
-\begin{tabular}{p{6cm} p{6cm}}
-\hrulefill & \hrulefill \\
-Firma del Estudiante & Fecha \\
-Franco Astegiano & \\
-& \\
-& \\
-\hrulefill & \hrulefill \\
-Firma del Director & Fecha \\
-[Nombre del Director] & \\
-& \\
-& \\
-\hrulefill & \hrulefill \\
-Firma del Co-director & Fecha \\
-[Nombre del Co-director] & \\
+\begin{table}[H]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{Variable NHANES} & \textbf{Descripción} \\
+\midrule
+BPXOSY1--3 & Lecturas de presión sistólica \\
+BPXODI1--3 & Lecturas de presión diastólica \\
+\bottomrule
 \end{tabular}
-\end{center}
+\end{table}
+
+\subsubsection{Tabaquismo}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{Variable NHANES} & \textbf{Descripción} \\
+\midrule
+SMQ020 & ¿Ha fumado al menos 100 cigarrillos en su vida? \\
+SMQ040 & Estado actual de tabaquismo \\
+SMD650 & Cigarrillos por día \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Consumo de alcohol}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{Variable NHANES} & \textbf{Descripción} \\
+\midrule
+ALQ121 & Frecuencia de consumo \\
+ALQ130 & Bebidas por día \\
+ALQ170 & Episodios de consumo excesivo \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Actividad física}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{Variable NHANES} & \textbf{Descripción} \\
+\midrule
+PAD790Q & Frecuencia de actividad moderada \\
+PAD790U & Unidad de frecuencia (D/W/M/Y) \\
+PAD800 & Minutos por sesión (moderada) \\
+PAD810Q & Frecuencia de actividad vigorosa \\
+PAD810U & Unidad de frecuencia (D/W/M/Y) \\
+PAD820 & Minutos por sesión (vigorosa) \\
+PAD680 & Minutos sedentarios por día \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Pesos muestrales}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{Variable NHANES} & \textbf{Descripción} \\
+\midrule
+WTMEC2YR & Peso muestral del ciclo de 2 años (MEC) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Variable objetivo}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{Variable NHANES} & \textbf{Descripción} \\
+\midrule
+DIQ010 & Diagnóstico de diabetes reportado por médico \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{has\_diabetes\_or\_prediabetes:} Variable binaria derivada de DIQ010.
+
+\begin{itemize}
+    \item Positivo (1): Diabetes diagnosticada (DIQ010 = 1) o prediabetes/borderline (DIQ010 = 3)
+    \item Negativo (0): Sin diagnóstico de diabetes (DIQ010 = 2)
+    \item Excluidos: Rechazó responder o no sabe (DIQ010 = 7, 9)
+\end{itemize}
+
+\subsection*{Justificación de la combinación diabetes + prediabetes}
+\begin{enumerate}
+    \item Comparten la misma vía metabólica (resistencia a la insulina)
+    \item El 70\% de los casos de prediabetes progresa a diabetes
+    \item Ambas condiciones se benefician de intervenciones tempranas
+    \item El objetivo es screening, donde es preferible maximizar la sensibilidad
+\end{enumerate}
+
+\section{Métodos y técnicas de recogida de datos}
+
+Los datos serán descargados directamente del repositorio público de NHANES (\url{https://wwwn.cdc.gov/nchs/nhanes}). El ciclo 2021--2023 incluye cuestionarios administrados mediante entrevistas asistidas por computadora (CAPI), exámenes físicos realizados en Mobile Examination Centers (MEC) y mediciones estandarizadas con protocolos documentados.
+
+No se realizará recolección primaria de datos. El procesamiento incluirá la integración de múltiples archivos mediante identificadores únicos de participante (SEQN).
+
+\section{Análisis de datos}
+
+\subsection*{Preprocesamiento}
+\begin{itemize}
+    \item Integración de archivos NHANES por SEQN
+    \item Manejo de valores faltantes
+    \item Transformación de variables categóricas
+    \item Evaluación de técnicas de balanceo de clases
+\end{itemize}
+
+\subsection*{Modelado}
+\begin{itemize}
+    \item Algoritmos: LightGBM, XGBoost, Random Forest
+    \item Optimización bayesiana con Optuna
+    \item Estrategias de ensamble: stacking, voting, bagging
+    \item Validación cruzada estratificada
+\end{itemize}
+
+\subsection*{Métricas de evaluación}
+\begin{itemize}
+    \item Recall (sensibilidad)
+    \item AUC-ROC, precision, F1-score, especificidad
+    \item Matriz de confusión
+\end{itemize}
+
+\subsection*{Interpretabilidad}
+\begin{itemize}
+    \item SHAP values
+    \item Intervalos de confianza mediante bootstrapping
+    \item Explicaciones en lenguaje natural
+\end{itemize}
+
+\subsection*{Herramientas}
+\begin{itemize}
+    \item Python
+    \item Weights \& Biases
+    \item FastAPI
+    \item Render
+    \item GitHub con CI/CD
+\end{itemize}
+
+\section{Ética}
+
+El estudio utiliza exclusivamente datos secundarios anonimizados de acceso público. NHANES opera bajo la aprobación del NCHS Research Ethics Review Board y todos los participantes proporcionaron consentimiento informado.
+
+El modelo no constituye un dispositivo médico de diagnóstico, sino una herramienta de screening.
+
+\section{Limitaciones del estudio}
+
+\begin{enumerate}
+    \item Generalización geográfica
+    \item Exclusión de variables de laboratorio
+    \item Top-coding de edad
+\end{enumerate}
+
+
+% ===========================================================
+% 11. PLAN DE TRABAJO
+% ===========================================================
+\chapter{Plan de trabajo}
+
+
+El plan de trabajo se estructura en las siguientes tareas:
+
+\begin{itemize}
+    \item \textbf{Tarea 1 -- Preparación de datos:}
+    Obtención de datos NHANES 2021--2023, análisis exploratorio, transformación de variables y construcción del dataset inicial.
+    \textit{Inicio:} 15/10/2025 -- \textit{Tiempo estimado:} 25 días.
+
+    \item \textbf{Tarea 2 -- Investigación y revisión de literatura:}
+    Relevamiento de artículos científicos sobre predicción de diabetes, análisis de metodologías y modelos existentes.
+    \textit{Inicio:} 10/11/2025 -- \textit{Tiempo estimado:} 25 días.
+
+    \item \textbf{Tarea 3 -- Desarrollo de infraestructura:}
+    Configuración del entorno de desarrollo, estructura de endpoints con FastAPI, definición de features y desarrollo de tests unitarios.
+    \textit{Inicio:} 01/11/2025 -- \textit{Tiempo estimado:} 30 días.
+
+    \item \textbf{Tarea 4 -- Entrenamiento y optimización del modelo:}
+    Implementación del pipeline de machine learning con LightGBM, seguimiento de experimentos con Weights \& Biases, optimización de hiperparámetros con Optuna y selección del modelo final.
+    \textit{Inicio:} 01/12/2025 -- \textit{Tiempo estimado:} 30 días.
+
+    \item \textbf{Tarea 5 -- Validación end-to-end:}
+    Integración del modelo tentativo con la API, validación del flujo completo de predicción y testing de endpoints.
+    \textit{Inicio:} 01/01/2026 -- \textit{Tiempo estimado:} 15 días.
+
+    \item \textbf{Tarea 6 -- Interfaz y documentación:}
+    Desarrollo de la interfaz de usuario, elaboración de documentación técnica y consolidación de la integración del sistema completo.
+    \textit{Inicio:} 15/01/2026 -- \textit{Tiempo estimado:} 20 días.
+
+    \item \textbf{Tarea 7 -- Deploy y cierre:}
+    Despliegue productivo en Render, redacción de conclusiones y sistematización de lecciones aprendidas.
+    \textit{Inicio:} 05/02/2026 -- \textit{Tiempo estimado:} 23 días.
+\end{itemize}
+
+\textbf{Fecha estimada de finalización del proyecto:} 28/02/2026.
+
+
+\bibliographystyle{plainnat}  % Estilo APA (o el que prefieras)
+
+\bibliography{referencias}   % Nombre de tu archivo .bib sin extensión
+
+
 
 \end{document}
