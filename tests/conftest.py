@@ -9,3 +9,13 @@ def injector_override() -> None:
     container = configure_container()
     container.override(TestContainer)
     container.wire(packages=["tests"])  # pylint: disable=no-member
+
+
+@pytest.fixture(scope="session")
+def anyio_backend() -> str:
+    """Configure anyio to use only asyncio backend.
+
+    Returns:
+        The asyncio backend identifier.
+    """
+    return "asyncio"

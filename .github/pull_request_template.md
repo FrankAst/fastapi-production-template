@@ -2,15 +2,14 @@
 
 ## Summary
 
-Brief description of changes
 
 ## Checklist
 
 ### Code & Implementation
-- [ ] Have you run `uv run poe format` and fixed all warnings before submitting
+- [] Have you run `uv run poe format` and fixed all warnings before submitting
 this PR?
-- [ ] Is all the logic in services instead of endpoints?
-- [ ] Is the code self-explanatory without requiring comments or documentation?
+- [] Is all the logic in services instead of endpoints?
+- [] Is the code self-explanatory without requiring comments or documentation?
 
 ### Machine Learning Specific
 - [ ] Are the data preprocessing steps reproducible? (e.g., deterministic pipelines, seeds set).

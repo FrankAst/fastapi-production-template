@@ -1,4 +1,13 @@
 from .endpoints import router as prediction_router
-from .schemas import PredictionRequest, PredictionResponse
+from .schemas import (
+    BatchPredictionResponse,
+    SinglePredictionRequest,
+    SinglePredictionResponse,
+)
 
-__all__ = ["PredictionRequest", "PredictionResponse", "prediction_router"]
+__all__ = [
+    "BatchPredictionResponse",
+    "SinglePredictionRequest",
+    "SinglePredictionResponse",
+    "prediction_router",
+]

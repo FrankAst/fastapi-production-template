@@ -1,24 +1,26 @@
-from collections.abc import Sequence
-from typing import Self
-
-from pydantic import model_validator
+from fastapi import UploadFile
+from pandas import DataFrame
 
 from app.api.schema import BaseSchema
-from app.services.training import DimensionalityMismatchError
+from app.utils import process_csv_file
 
 
-class TrainRequest(BaseSchema):
-    age: Sequence[Sequence[float]]
-    time_for_failure: Sequence[float]
+class FileTrainRequest(BaseSchema):
+    file: UploadFile
 
-    @model_validator(mode="after")
-    def features_and_labels_have_same_length(self) -> Self:
-        if len(self.age) != len(self.time_for_failure):
-            raise DimensionalityMismatchError(
-                x_dim=len(self.age),
-                y_dim=len(self.time_for_failure),
-            )
-        return self
+    class Config:
+        arbitrary_types_allowed = True
+
+    @classmethod
+    async def from_upload(cls, file: UploadFile) -> DataFrame:
+        """
+        Create FileTrainRequest from uploaded file.
+
+        Returns:
+            FileTrainRequest: An instance created from the uploaded file.
+        """
+        return await process_csv_file(file)
 
 
-class TrainResponse(BaseSchema): ...
+class TrainResponse(BaseSchema):
+    message: str = "Model trained successfully"

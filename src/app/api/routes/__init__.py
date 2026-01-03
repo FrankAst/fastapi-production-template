@@ -3,8 +3,12 @@ from collections.abc import Iterable
 from fastapi import APIRouter
 
 from .health import health_router
-from .prediction import PredictionRequest, PredictionResponse, prediction_router
-from .train import TrainRequest, TrainResponse, train_router
+from .prediction import (
+    SinglePredictionRequest,
+    SinglePredictionResponse,
+    prediction_router,
+)
+from .train import FileTrainRequest, TrainResponse, train_router
 
 ROUTERS: Iterable[APIRouter] = (
     health_router,
@@ -14,9 +18,9 @@ ROUTERS: Iterable[APIRouter] = (
 
 __all__ = [
     "ROUTERS",
-    "PredictionRequest",
-    "PredictionResponse",
-    "TrainRequest",
+    "FileTrainRequest",
+    "SinglePredictionRequest",
+    "SinglePredictionResponse",
     "TrainResponse",
     "health_router",
     "prediction_router",
