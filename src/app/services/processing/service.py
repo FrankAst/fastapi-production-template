@@ -49,6 +49,9 @@ class ProcessingService(BaseModel):
         if skip:
             return df
 
+        # Store the target column (last column) to preserve its position
+        target_column = df.columns[-1]
+
         # Preprocessing logic
         steps = [
             cls.age_binning,
@@ -58,4 +61,6 @@ class ProcessingService(BaseModel):
         for step in steps:
             df = step(df)
 
-        return df
+        # Ensure target column remains last
+        columns = [col for col in df.columns if col != target_column] + [target_column]
+        return df[columns]
