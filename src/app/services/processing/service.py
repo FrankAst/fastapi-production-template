@@ -36,21 +36,24 @@ class ProcessingService(BaseModel):
         return df.drop(["age_group", age_column], axis=1)
 
     @classmethod
-    def preprocess(cls, df: DataFrame, *, skip: bool = False) -> DataFrame:
+    def preprocess(
+        cls, df: DataFrame, *, skip: bool = False, training: bool = False
+    ) -> DataFrame:
         """
         Preprocess the data.
 
         Args:
             df (DataFrame): Raw data.
             skip (bool): If True, skip preprocessing and return data as-is.
+            training (bool): If True, indicates preprocessing for training data.
         Returns:
             DataFrame: Preprocessed data.
         """
         if skip:
             return df
 
-        # Store the target column (last column) to preserve its position
-        target_column = df.columns[-1]
+        # Store the target column (last column) to preserve its position - IF TRAINING
+        target_column = df.columns[-1] if training else None
 
         # Preprocessing logic
         steps = [
@@ -62,5 +65,9 @@ class ProcessingService(BaseModel):
             df = step(df)
 
         # Ensure target column remains last
-        columns = [col for col in df.columns if col != target_column] + [target_column]
-        return df[columns]
+        if training and target_column is not None:
+            columns = [col for col in df.columns if col != target_column] + [
+                target_column
+            ]
+            return df[columns]
+        return df

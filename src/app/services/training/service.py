@@ -44,7 +44,7 @@ class TrainingService(BaseModel):
         SchemaValidator.infer_and_save_schema(df)
 
         # Preprocess data
-        df = ProcessingService.preprocess(df)
+        df = ProcessingService.preprocess(df, training=True)
 
         # Split features and target
         X = df.iloc[:, :-1]  # Features as DataFrame
