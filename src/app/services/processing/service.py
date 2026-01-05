@@ -1,4 +1,5 @@
-from pandas import DataFrame, cut  # pyright: ignore[reportUnknownVariableType]
+import pandas as pd
+from pandas import DataFrame  # pyright: ignore[reportUnknownVariableType]
 from pydantic import BaseModel
 
 
@@ -8,31 +9,45 @@ class ProcessingService(BaseModel):
     @staticmethod
     def age_binning(df: DataFrame) -> DataFrame:
         """
-        Process age column into bins and applies
-        one-hot encoding.
+        Process age column into bins and applies one-hot encoding,
+        explicitly handling missing values.
         Args:
             df (DataFrame): Input data.
         Returns:
             DataFrame: Data with binned age columns.
         """
+
         age_column = "RIDAGEYR"
         bins = [18, 45, 65, 80]
         labels = ["young_adult", "middle_age", "elderly"]
+        unknown_label = "age_unknown"
 
-        # Create age group categories
-        df["age_group"] = cut(df[age_column], bins=bins, labels=labels, right=False)
+        # Initialize all output columns to 0
+        for col in (*labels, unknown_label):
+            df[col] = 0
 
-        # Create binary columns for each age group using one-hot encoding
-        age_dummies = df["age_group"].str.get_dummies()
+        # Identify missing ages
+        missing_mask = df[age_column].isna()
 
-        # Add binary columns to dataframe
+        # Explicit unknown bucket
+        df.loc[missing_mask, unknown_label] = 1
+
+        # Bin only non-missing values
+        df.loc[~missing_mask, "age_group"] = pd.cut(
+            df.loc[~missing_mask, age_column],
+            bins=bins,
+            labels=labels,
+            right=False,
+        )
+
+        # One-hot encode known age groups
+        age_dummies = df.loc[~missing_mask, "age_group"].str.get_dummies().astype(int)
+
+        # Assign back
         for label in labels:
             if label in age_dummies.columns:
-                df[label] = age_dummies[label].astype(int)
-            else:
-                df[label] = 0
+                df.loc[~missing_mask, label] = age_dummies[label]
 
-        # Drop the intermediate age_group column and original age column
         return df.drop(["age_group", age_column], axis=1)
 
     @classmethod
