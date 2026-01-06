@@ -15,38 +15,53 @@ class ProcessingService(BaseModel):
             df (DataFrame): Input data.
         Returns:
             DataFrame: Data with binned age columns.
+
+        Age semantics:
+        - 18-44  -> young_adult
+        - 45-64  -> middle_age
+        - 65-79  -> senior
+        - 80+    -> elderly (encoded as 80)
+        - NaN    -> age_unknown
         """
 
         age_column = "RIDAGEYR"
         bins = [18, 45, 65, 80]
-        labels = ["young_adult", "middle_age", "elderly"]
+        elderly_top_coded_age = 80
+        labels = ["young_adult", "middle_age", "senior"]
+
+        elderly_label = "elderly"
         unknown_label = "age_unknown"
 
         # Initialize all output columns to 0
-        for col in (*labels, unknown_label):
+        for col in (*labels, elderly_label, unknown_label):
             df[col] = 0
 
-        # Identify missing ages
+        # Masks
         missing_mask = df[age_column].isna()
+        elderly_mask = df[age_column] == elderly_top_coded_age
+        valid_mask = ~(missing_mask | elderly_mask)
 
-        # Explicit unknown bucket
+        # Unknown ages
         df.loc[missing_mask, unknown_label] = 1
 
-        # Bin only non-missing values
-        df.loc[~missing_mask, "age_group"] = pd.cut(
-            df.loc[~missing_mask, age_column],
+        # Elderly ages
+        df.loc[elderly_mask, elderly_label] = 1
+
+        # Bin valid (non-missing, non-censored) ages
+        df.loc[valid_mask, "age_group"] = pd.cut(
+            df.loc[valid_mask, age_column],
             bins=bins,
             labels=labels,
             right=False,
         )
 
-        # One-hot encode known age groups
-        age_dummies = df.loc[~missing_mask, "age_group"].str.get_dummies().astype(int)
+        # One-hot encode binned ages
+        age_dummies = df.loc[valid_mask, "age_group"].str.get_dummies().astype(int)
 
         # Assign back
         for label in labels:
             if label in age_dummies.columns:
-                df.loc[~missing_mask, label] = age_dummies[label]
+                df.loc[valid_mask, label] = age_dummies[label]
 
         return df.drop(["age_group", age_column], axis=1)
 
