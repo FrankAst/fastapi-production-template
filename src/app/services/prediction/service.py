@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 
 from app.domain import MLModel, PredictionInput, PredictionOutput
 from app.services.helper import load_model
@@ -12,8 +12,6 @@ from .exceptions import NoTrainedModelError
 
 class PredictionService(BaseModel):
     model_path: Path = Field(default=Settings.MODEL_PATH)
-
-    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @property
     def model(self) -> MLModel | None:
