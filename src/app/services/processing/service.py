@@ -1,6 +1,8 @@
 import pandas as pd
-from pandas import DataFrame  # pyright: ignore[reportUnknownVariableType]
+from pandas import DataFrame, Series  # pyright: ignore[reportUnknownVariableType]
 from pydantic import BaseModel
+
+from . import preprocessingcfg as cfg
 
 
 class ProcessingService(BaseModel):
@@ -24,46 +26,38 @@ class ProcessingService(BaseModel):
         - NaN    -> age_unknown
         """
 
-        age_column = "RIDAGEYR"
-        bins = [18, 45, 65, 80]
-        elderly_top_coded_age = 80
-        labels = ["young_adult", "middle_age", "senior"]
+        age_column = cfg.AGE_COLUMN
+        labels = cfg.AGE_LABELS
+        nan_label = cfg.UNKNOWN_LABEL
+        elderly_label = cfg.ELDERLY_LABEL
+        age_bins = cfg.AGE_BINS
+        elderly_top_coded_age = cfg.ELDERLY_TOP_CODED_AGE
+        age_group_col = "age_group"
 
-        elderly_label = "elderly"
-        unknown_label = "age_unknown"
+        def categorize_age(d: DataFrame) -> Series:
+            return (
+                pd
+                .cut(
+                    d[age_column].where(d[age_column] != elderly_top_coded_age),
+                    bins=age_bins,
+                    labels=labels,
+                    right=False,
+                )
+                .cat.add_categories([elderly_label, nan_label])
+                .mask(d[age_column] == elderly_top_coded_age, elderly_label)
+                .fillna(nan_label)
+            )
 
-        # Initialize all output columns to 0
-        for col in (*labels, elderly_label, unknown_label):
-            df[col] = 0
+        def one_hot_encode(d: DataFrame) -> DataFrame:
+            dummies = pd.get_dummies(d[age_group_col]).astype(int)
+            return pd.concat([d, dummies], axis=1)
 
-        # Masks
-        missing_mask = df[age_column].isna()
-        elderly_mask = df[age_column] == elderly_top_coded_age
-        valid_mask = ~(missing_mask | elderly_mask)
-
-        # Unknown ages
-        df.loc[missing_mask, unknown_label] = 1
-
-        # Elderly ages
-        df.loc[elderly_mask, elderly_label] = 1
-
-        # Bin valid (non-missing, non-censored) ages
-        df.loc[valid_mask, "age_group"] = pd.cut(
-            df.loc[valid_mask, age_column],
-            bins=bins,
-            labels=labels,
-            right=False,
+        return (
+            df
+            .assign(age_group=categorize_age)
+            .pipe(one_hot_encode)
+            .drop(columns=[age_column, age_group_col])
         )
-
-        # One-hot encode binned ages
-        age_dummies = df.loc[valid_mask, "age_group"].str.get_dummies().astype(int)
-
-        # Assign back
-        for label in labels:
-            if label in age_dummies.columns:
-                df.loc[valid_mask, label] = age_dummies[label]
-
-        return df.drop(["age_group", age_column], axis=1)
 
     @classmethod
     def preprocess(

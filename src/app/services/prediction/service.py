@@ -33,12 +33,11 @@ class PredictionService(BaseModel):
         """
         if self.model is None:
             raise NoTrainedModelError
-        # Preprocess features
+
         processed_features = ProcessingService.preprocess(
             prediction_input.features, skip=False
         )
 
-        # Make predictions
         prediction_results = self.model.predict(processed_features)
 
         return PredictionOutput(

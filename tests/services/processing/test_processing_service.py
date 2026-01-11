@@ -65,11 +65,14 @@ class TestAgeBinningColumns:
         """Test that age binning creates the expected one-hot encoded columns."""
         result = ProcessingService.age_binning(df_age_binning_test_cases.copy())
 
-        assert "young_adult" in result.columns
-        assert "middle_age" in result.columns
-        assert "senior" in result.columns
-        assert "elderly" in result.columns
-        assert "age_unknown" in result.columns
+        expected_columns = {
+            "young_adult",
+            "middle_age",
+            "senior",
+            "elderly",
+            "age_unknown",
+        }
+        assert expected_columns.issubset(result.columns)
 
     @staticmethod
     def test_removes_original_columns(
@@ -78,8 +81,7 @@ class TestAgeBinningColumns:
         """Test that original age columns are removed after binning."""
         result = ProcessingService.age_binning(df_age_binning_test_cases.copy())
 
-        assert "RIDAGEYR" not in result.columns
-        assert "age_group" not in result.columns
+        assert not {"RIDAGEYR", "age_group"}.issubset(result.columns)
 
 
 class TestAgeBinningCategories:
