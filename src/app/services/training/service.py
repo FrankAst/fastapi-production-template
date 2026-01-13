@@ -4,11 +4,10 @@ from pandas import DataFrame
 from pydantic import BaseModel, ConfigDict, Field
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
 
 from app.domain import MLModel, SchemaValidator
 from app.services.helper import load_model, save_model
-from app.services.processing.service import ProcessingService
+from app.services.processing import AgeBinner
 from app.settings import Settings
 
 
@@ -24,9 +23,7 @@ class TrainingService(BaseModel):
             if model:
                 return model
 
-        return make_pipeline(
-            StandardScaler(), LogisticRegression(), memory="cache_folder"
-        )  # type: ignore[return-value]
+        return make_pipeline(AgeBinner(), LogisticRegression(), memory="cache_folder")  # type: ignore[return-value]
 
     def train(self, df: DataFrame) -> MLModel:
         """
@@ -42,9 +39,6 @@ class TrainingService(BaseModel):
         """
         # Generate and save schema from training data (features only)
         SchemaValidator.infer_and_save_schema(df)
-
-        # Preprocess data
-        df = ProcessingService.preprocess(df, training=True)
 
         # Split features and target
         X = df.iloc[:, :-1]  # Features as DataFrame

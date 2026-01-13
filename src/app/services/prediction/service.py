@@ -4,7 +4,6 @@ from pydantic import BaseModel, Field
 
 from app.domain import MLModel, PredictionInput, PredictionOutput
 from app.services.helper import load_model
-from app.services.processing.service import ProcessingService
 from app.settings import Settings
 
 from .exceptions import NoTrainedModelError
@@ -34,11 +33,7 @@ class PredictionService(BaseModel):
         if self.model is None:
             raise NoTrainedModelError
 
-        processed_features = ProcessingService.preprocess(
-            prediction_input.features, skip=False
-        )
-
-        prediction_results = self.model.predict(processed_features)
+        prediction_results = self.model.predict(prediction_input.features)
 
         return PredictionOutput(
             predictions=prediction_results, count=len(prediction_results)

@@ -1,5 +1,5 @@
-from .service import ProcessingService
+from .service import AgeBinner
 
 __all__ = [
-    "ProcessingService",
+    "AgeBinner",
 ]

@@ -97,6 +97,8 @@ repos:
     rev: "1.9.1"
     hooks:
     -   id: nbqa-ruff
+        additional_dependencies:
+        -   "ruff==0.14.11"
 
     -   id: nbqa-pylint
         additional_dependencies:

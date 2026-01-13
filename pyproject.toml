@@ -192,6 +192,7 @@ ignore = [
     "ISC001",
     "ANN401",
     "COM812",
+    "RUF067", # __init__ module should only contain docstrings and re-exports
 ]
 
 [tool.ruff.format]
