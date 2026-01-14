@@ -1,25 +1,32 @@
 """Fixtures for preprocessing tests."""
 
+from typing import Any
+
 import pandas as pd
 import pytest
 
 
 @pytest.fixture
-def valid_training_dataframe() -> pd.DataFrame:
+def valid_training_data() -> dict[str, list[Any]]:
     """
-    Create a valid training DataFrame with features and target.
-
-    Structure: 3 feature columns + 1 target column (last).
-
     Returns:
-        DataFrame with training data.
+        Dictionary with feature columns and target values.
     """
-    return pd.DataFrame({
+    return {
         "RIDAGEYR": [25, 30, 35, 40],
         "income": [50000, 60000, 70000, 80000],
         "education_years": [12, 16, 18, 20],
         "target": [0, 1, 1, 0],
-    })
+    }
+
+
+@pytest.fixture
+def valid_training_dataframe(valid_training_data: dict[str, list[Any]]) -> pd.DataFrame:
+    """
+    Returns:
+        DataFrame with feature columns and target values.
+    """
+    return pd.DataFrame(valid_training_data)
 
 
 @pytest.fixture
