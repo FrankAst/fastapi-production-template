@@ -220,6 +220,7 @@ fail-on = ["I"]
 fail-under = 10
 ignore = []
 ignore-paths = []
+init-hook = "import sys; sys.path.insert(0, 'src')"
 jobs = 0
 limit-inference-results = 1000
 load-plugins = [

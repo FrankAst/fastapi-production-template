@@ -1,16 +1,23 @@
 """Fixtures for preprocessing tests."""
 
-from typing import Any
+from typing import Any, cast
 
+import numpy as np
 import pandas as pd
 import pytest
+
+# =============================================================================
+# Base Training Data Fixtures
+# =============================================================================
 
 
 @pytest.fixture
 def valid_training_data() -> dict[str, list[Any]]:
     """
+    Raw training data as dictionary.
+
     Returns:
-        Dictionary with feature columns and target values.
+        Dictionary with feature columns and target.
     """
     return {
         "RIDAGEYR": [25, 30, 35, 40],
@@ -23,59 +30,73 @@ def valid_training_data() -> dict[str, list[Any]]:
 @pytest.fixture
 def valid_training_dataframe(valid_training_data: dict[str, list[Any]]) -> pd.DataFrame:
     """
+    Create a valid training DataFrame with features and target.
+
+    Args:
+        valid_training_data: Raw training data dictionary.
+
     Returns:
-        DataFrame with feature columns and target values.
+        DataFrame with training data.
     """
     return pd.DataFrame(valid_training_data)
 
 
+# =============================================================================
+# Age Binner Fixtures
+# =============================================================================
+
+
 @pytest.fixture
-def df_age_binning_test_cases() -> pd.DataFrame:
+def age_categories() -> list[str]:
     """
-    Comprehensive DataFrame with all age test cases.
+    One-hot encoded column names produced by AgeBinner.
 
-    Note: Dataset only contains adults (18+).
+    Returns:
+        List of age category column names.
+    """
+    return ["young_adult", "middle_age", "senior", "elderly", "age_unknown"]
 
-    Age semantics (from service):
+
+def _age_test_cases() -> list[Any]:
+    """
+    Age values with expected category mappings.
+
+    Age semantics:
     - 18-44  -> young_adult
     - 45-64  -> middle_age
     - 65-79  -> senior
-    - 80     -> elderly (top-coded age)
+    - 80     -> elderly (top-coded)
     - NaN    -> age_unknown
 
-    Rows are organized by category for easy slicing:
-    - Rows 0-3: Young adult [18, 45) -> ages 18, 25, 30, 44
-    - Rows 4-7: Middle age [45, 65) -> ages 45, 50, 55, 64
-    - Rows 8-11: Senior [65, 80) -> ages 65, 70, 75, 79
-    - Rows 12-13: Elderly (top-coded) -> age 80
-    - Rows 14-15: Unknown -> NaN values
+    Returns:
+        List of pytest.param objects with (age, expected_category) tuples.
+    """
+    return [
+        pytest.param((18, "young_adult"), id="young_adult_lower"),
+        pytest.param((30, "young_adult"), id="young_adult_mid"),
+        pytest.param((44, "young_adult"), id="young_adult_upper"),
+        pytest.param((45, "middle_age"), id="middle_age_lower"),
+        pytest.param((55, "middle_age"), id="middle_age_mid"),
+        pytest.param((64, "middle_age"), id="middle_age_upper"),
+        pytest.param((65, "senior"), id="senior_lower"),
+        pytest.param((72, "senior"), id="senior_mid"),
+        pytest.param((79, "senior"), id="senior_upper"),
+        pytest.param((80, "elderly"), id="elderly_top_coded"),
+        pytest.param((np.nan, "age_unknown"), id="unknown_nan"),
+    ]
+
+
+@pytest.fixture(params=_age_test_cases())
+def age_with_expected_category(
+    request: pytest.FixtureRequest,
+) -> tuple[float | None, str]:
+    """
+    Parametrized fixture yielding (age, expected_category) tuples.
+
+    Args:
+        request: Pytest fixture request object.
 
     Returns:
-        DataFrame with RIDAGEYR and feature columns.
+        Tuple of (age_value, expected_category_name).
     """
-    return pd.DataFrame({
-        "RIDAGEYR": [
-            # Young adult [18, 45)
-            18,
-            25,
-            30,
-            44,
-            # Middle age [45, 65)
-            45,
-            50,
-            55,
-            64,
-            # Senior [65, 80)
-            65,
-            70,
-            75,
-            79,
-            # Elderly (top-coded age = 80)
-            80,
-            80,
-            # Unknown
-            None,
-            None,
-        ],
-        "feature": list(range(1, 17)),
-    })
+    return cast("tuple[float | None, str]", request.param)

@@ -1,169 +1,78 @@
+"""Tests for AgeBinner transformer."""
+
 import pandas as pd
 
 from app.services.processing import AgeBinner
 
 # =============================================================================
-# Age Binning Tests
+# Age Binning Column Tests
 # =============================================================================
 
-# Row indices for df_age_binning_test_cases fixture
-# Age semantics:
-# - 18-44  -> young_adult
-# - 45-64  -> middle_age
-# - 65-79  -> senior
-# - 80     -> elderly (top-coded)
-# - NaN    -> age_unknown
-YOUNG_ADULT_ROWS = slice(0, 4)  # ages: 18, 25, 30, 44
-MIDDLE_AGE_ROWS = slice(4, 8)  # ages: 45, 50, 55, 64
-SENIOR_ROWS = slice(8, 12)  # ages: 65, 70, 75, 79
-ELDERLY_ROWS = slice(12, 14)  # ages: 80, 80 (top-coded)
-UNKNOWN_ROWS = slice(14, 16)  # ages: NaN, NaN
 
-# Boundary indices (first age of each group)
-BOUNDARY_YOUNG_ADULT = 0  # age 18
-BOUNDARY_MIDDLE_AGE = 4  # age 45
-BOUNDARY_SENIOR = 8  # age 65
+def test_creates_expected_columns(age_categories: list[str]) -> None:
+    """
+    Test that age binning creates the expected one-hot encoded columns.
+
+    Args:
+        age_categories: List of expected age category column names.
+    """
+    df = pd.DataFrame({
+        "RIDAGEYR": [25, 50, 70, 80, None],
+        "feature": [1, 2, 3, 4, 5],
+    })
+    result = AgeBinner().transform(df)
+
+    assert set(age_categories).issubset(result.columns)
 
 
-class TestAgeBinningColumns:
-    """Tests for verifying age binning column creation and removal."""
+def test_removes_original_column() -> None:
+    """Test that RIDAGEYR column is removed after binning."""
+    df = pd.DataFrame({"RIDAGEYR": [25], "feature": [1]})
+    result = AgeBinner().transform(df)
 
-    @staticmethod
-    def test_creates_expected_columns(
-        df_age_binning_test_cases: pd.DataFrame,
-    ) -> None:
-        """Test that age binning creates the expected one-hot encoded columns."""
-        result = AgeBinner().transform(df_age_binning_test_cases.copy())
-
-        expected_columns = {
-            "young_adult",
-            "middle_age",
-            "senior",
-            "elderly",
-            "age_unknown",
-        }
-        assert expected_columns.issubset(result.columns)
-
-    @staticmethod
-    def test_removes_original_columns(
-        df_age_binning_test_cases: pd.DataFrame,
-    ) -> None:
-        """Test that original age columns are removed after binning."""
-        result = AgeBinner().transform(df_age_binning_test_cases.copy())
-
-        assert not {"RIDAGEYR", "age_group"}.issubset(result.columns)
+    assert "RIDAGEYR" not in result.columns
 
 
-class TestAgeBinningCategories:
-    """Tests for verifying correct age categorization."""
-
-    @staticmethod
-    def test_young_adult_range(
-        df_age_binning_test_cases: pd.DataFrame,
-    ) -> None:
-        """Test ages 18-44 are categorized as young_adult."""
-        df = df_age_binning_test_cases.iloc[YOUNG_ADULT_ROWS].copy()
-        result = AgeBinner().transform(df)
-
-        assert all(result["young_adult"] == 1), "All ages 18-44 should be young_adult"
-        assert all(result["middle_age"] == 0), "No ages 18-44 should be middle_age"
-        assert all(result["senior"] == 0), "No ages 18-44 should be senior"
-        assert all(result["elderly"] == 0), "No ages 18-44 should be elderly"
-        assert all(result["age_unknown"] == 0), "No ages 18-44 should be age_unknown"
-
-    @staticmethod
-    def test_middle_age_range(
-        df_age_binning_test_cases: pd.DataFrame,
-    ) -> None:
-        """Test ages 45-64 are categorized as middle_age."""
-        df = df_age_binning_test_cases.iloc[MIDDLE_AGE_ROWS].copy()
-        result = AgeBinner().transform(df)
-
-        assert all(result["young_adult"] == 0), "No ages 45-64 should be young_adult"
-        assert all(result["middle_age"] == 1), "All ages 45-64 should be middle_age"
-        assert all(result["senior"] == 0), "No ages 45-64 should be senior"
-        assert all(result["elderly"] == 0), "No ages 45-64 should be elderly"
-        assert all(result["age_unknown"] == 0), "No ages 45-64 should be age_unknown"
-
-    @staticmethod
-    def test_senior_range(
-        df_age_binning_test_cases: pd.DataFrame,
-    ) -> None:
-        """Test ages 65-79 are categorized as senior."""
-        df = df_age_binning_test_cases.iloc[SENIOR_ROWS].copy()
-        result = AgeBinner().transform(df)
-
-        assert all(result["young_adult"] == 0), "No ages 65-79 should be young_adult"
-        assert all(result["middle_age"] == 0), "No ages 65-79 should be middle_age"
-        assert all(result["senior"] == 1), "All ages 65-79 should be senior"
-        assert all(result["elderly"] == 0), "No ages 65-79 should be elderly"
-        assert all(result["age_unknown"] == 0), "No ages 65-79 should be age_unknown"
-
-    @staticmethod
-    def test_elderly_top_coded(
-        df_age_binning_test_cases: pd.DataFrame,
-    ) -> None:
-        """Test age 80 (top-coded) is categorized as elderly."""
-        df = df_age_binning_test_cases.iloc[ELDERLY_ROWS].copy()
-        result = AgeBinner().transform(df)
-
-        assert all(result["young_adult"] == 0), "Age 80 should not be young_adult"
-        assert all(result["middle_age"] == 0), "Age 80 should not be middle_age"
-        assert all(result["senior"] == 0), "Age 80 should not be senior"
-        assert all(result["elderly"] == 1), "Age 80 should be elderly"
-        assert all(result["age_unknown"] == 0), "Age 80 should not be age_unknown"
-
-    @staticmethod
-    def test_unknown_nan_ages(
-        df_age_binning_test_cases: pd.DataFrame,
-    ) -> None:
-        """Test NaN ages are categorized as age_unknown."""
-        df = df_age_binning_test_cases.iloc[UNKNOWN_ROWS].copy()
-        result = AgeBinner().transform(df)
-
-        assert all(result["young_adult"] == 0), "NaN ages should not be young_adult"
-        assert all(result["middle_age"] == 0), "NaN ages should not be middle_age"
-        assert all(result["senior"] == 0), "NaN ages should not be senior"
-        assert all(result["elderly"] == 0), "NaN ages should not be elderly"
-        assert all(result["age_unknown"] == 1), "NaN ages should be age_unknown"
+# =============================================================================
+# Age Binning Category Tests
+# =============================================================================
 
 
-class TestAgeBinningBoundariesAndEdgeCases:
-    """Tests for boundary conditions and edge cases."""
+def test_age_maps_to_correct_category(
+    age_with_expected_category: tuple[float | None, str],
+    age_categories: list[str],
+) -> None:
+    """
+    Test that each age maps to exactly one correct category.
 
-    @staticmethod
-    def test_exact_boundary_values(
-        df_age_binning_test_cases: pd.DataFrame,
-    ) -> None:
-        """Test ages exactly at bin boundaries (18, 45, 65)."""
-        df = df_age_binning_test_cases.iloc[
-            [BOUNDARY_YOUNG_ADULT, BOUNDARY_MIDDLE_AGE, BOUNDARY_SENIOR]
-        ].copy()
-        result = AgeBinner().transform(df)
+    Args:
+        age_with_expected_category: Tuple of (age, expected_category).
+        age_categories: List of all age category column names.
+    """
+    age, expected_category = age_with_expected_category
+    df = pd.DataFrame({"RIDAGEYR": [age], "feature": [1]})
+    result = AgeBinner().transform(df)
 
-        # Age 18 -> young_adult (first row)
-        assert result.iloc[0]["young_adult"] == 1
-        assert result.iloc[0]["middle_age"] == 0
-        assert result.iloc[0]["senior"] == 0
+    for category in age_categories:
+        expected = 1 if category == expected_category else 0
+        actual = result[category].iloc[0]
+        assert actual == expected
 
-        # Age 45 -> middle_age (second row)
-        assert result.iloc[1]["young_adult"] == 0
-        assert result.iloc[1]["middle_age"] == 1
-        assert result.iloc[1]["senior"] == 0
 
-        # Age 65 -> senior (third row)
-        assert result.iloc[2]["young_adult"] == 0
-        assert result.iloc[2]["middle_age"] == 0
-        assert result.iloc[2]["senior"] == 1
+def test_mutual_exclusivity(
+    valid_training_dataframe: pd.DataFrame,
+    age_categories: list[str],
+) -> None:
+    """
+    Test that each row has exactly one age category set to 1.
 
-    @staticmethod
-    def test_mutual_exclusivity(
-        df_age_binning_test_cases: pd.DataFrame,
-    ) -> None:
-        """Test that each row has exactly one age category set to 1."""
-        result = AgeBinner().transform(df_age_binning_test_cases.copy())
+    Args:
+        valid_training_dataframe: Base DataFrame with training data.
+        age_categories: List of all age category column names.
+    """
+    df = valid_training_dataframe.copy()
+    df["RIDAGEYR"] = [18, 45, 65, 80]
+    result = AgeBinner().transform(df)
 
-        age_columns = ["young_adult", "middle_age", "senior", "elderly", "age_unknown"]
-        row_sums = result[age_columns].sum(axis=1)
-
-        assert all(row_sums == 1), "Each row should have exactly one age category"
+    row_sums = result[age_categories].sum(axis=1)
+    assert all(row_sums == 1), "Each row should have exactly one age category"
