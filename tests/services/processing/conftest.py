@@ -6,10 +6,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-# =============================================================================
-# Base Training Data Fixtures
-# =============================================================================
-
 
 @pytest.fixture
 def valid_training_data() -> dict[str, list[Any]]:
@@ -41,9 +37,22 @@ def valid_training_dataframe(valid_training_data: dict[str, list[Any]]) -> pd.Da
     return pd.DataFrame(valid_training_data)
 
 
-# =============================================================================
-# Age Binner Fixtures
-# =============================================================================
+@pytest.fixture
+def dataframe_with_all_age_categories(
+    valid_training_dataframe: pd.DataFrame,
+) -> pd.DataFrame:
+    """
+    DataFrame with RIDAGEYR values covering all age categories.
+
+    Args:
+        valid_training_dataframe: Base DataFrame with training data.
+
+    Returns:
+        DataFrame with ages [18, 45, 65, 80] representing each category.
+    """
+    df = valid_training_dataframe.copy()
+    df["RIDAGEYR"] = [18, 45, 65, 80]
+    return df
 
 
 @pytest.fixture
@@ -71,18 +80,23 @@ def _age_test_cases() -> list[Any]:
     Returns:
         List of pytest.param objects with (age, expected_category) tuples.
     """
+
+    cases: list[tuple[float, str, str]] = [
+        (18, "young_adult", "young_adult_lower"),
+        (30, "young_adult", "young_adult_mid"),
+        (44, "young_adult", "young_adult_upper"),
+        (45, "middle_age", "middle_age_lower"),
+        (55, "middle_age", "middle_age_mid"),
+        (64, "middle_age", "middle_age_upper"),
+        (65, "senior", "senior_lower"),
+        (72, "senior", "senior_mid"),
+        (79, "senior", "senior_upper"),
+        (80, "elderly", "elderly_top_coded"),
+        (np.nan, "age_unknown", "unknown_nan"),
+    ]
+
     return [
-        pytest.param((18, "young_adult"), id="young_adult_lower"),
-        pytest.param((30, "young_adult"), id="young_adult_mid"),
-        pytest.param((44, "young_adult"), id="young_adult_upper"),
-        pytest.param((45, "middle_age"), id="middle_age_lower"),
-        pytest.param((55, "middle_age"), id="middle_age_mid"),
-        pytest.param((64, "middle_age"), id="middle_age_upper"),
-        pytest.param((65, "senior"), id="senior_lower"),
-        pytest.param((72, "senior"), id="senior_mid"),
-        pytest.param((79, "senior"), id="senior_upper"),
-        pytest.param((80, "elderly"), id="elderly_top_coded"),
-        pytest.param((np.nan, "age_unknown"), id="unknown_nan"),
+        pytest.param((age, category), id=case_id) for age, category, case_id in cases
     ]
 
 
