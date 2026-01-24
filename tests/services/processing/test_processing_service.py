@@ -13,7 +13,7 @@ def test_creates_expected_columns(
     result = AgeBinner().transform(valid_training_dataframe)
 
     assert set(age_categories).issubset(result.columns)
-    assert result.to_csv() == snapshot
+    assert result.to_csv().strip() == snapshot
 
 
 def test_removes_original_column(valid_training_dataframe: pd.DataFrame) -> None:
