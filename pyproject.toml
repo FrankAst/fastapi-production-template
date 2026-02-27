@@ -10,8 +10,14 @@ dependencies = [
     "dependency-injector==4.48.1",
     "fastapi==0.116.1",
     "httpx==0.28.1",
+    "ipykernel==7.1.0",
     "joblib==1.5.1",
+    "lightgbm==4.5.0",
     "matplotlib==3.10.7",
+    "matplotlib-inline==0.2.1",
+    "numpy==2.2.1",
+    "optuna==4.1.0",
+    "optuna-integration[wandb]==4.1.0",
     "pandera[io]==0.20.4",
     "pandas==2.3.1",
     "polyfactory==2.22.2",
@@ -21,6 +27,7 @@ dependencies = [
     "scikit-learn==1.7.1",
     "streamlit==1.48.0",
     "uvicorn[standard]==0.35.0",
+    "wandb==0.19.1",
 ]
 
 [tool.uv]
@@ -143,6 +150,7 @@ skip_covered = true
 
 [tool.mypy]
 strict = true
+exclude = '(?x)(^Notebooks/|\.ipynb$)'
 
 follow_imports = "normal"
 
@@ -177,7 +185,7 @@ warn_return_any = false
 [tool.ruff]
 fix = true
 preview = true
-exclude = ['app\views\templates\books', 'books', 'Notebooks']
+exclude = ['app\views\templates\books', 'books', 'Notebooks', '*.ipynb']
 target-version = "py312"
 unsafe-fixes = true
 
@@ -219,7 +227,7 @@ extension-pkg-whitelist = ["mypy", "dependency_injector", "pandera"]
 fail-on = ["I"]
 fail-under = 10
 ignore = []
-ignore-paths = []
+ignore-paths = ["^Notebooks/.*$", ".*\\.ipynb$"]
 init-hook = "import sys; sys.path.insert(0, 'src')"
 jobs = 0
 limit-inference-results = 1000
