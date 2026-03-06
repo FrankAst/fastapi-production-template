@@ -206,3 +206,5 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 pytest-report.xml
+src/app/playground/wandb/
+src/app/playground/wandb_charts/
