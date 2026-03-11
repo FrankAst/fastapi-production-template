@@ -7,11 +7,12 @@ from sklearn.pipeline import make_pipeline
 
 from app.domain import MLModel, SchemaValidator
 from app.services.helper import load_model, save_model
-from app.services.processing import AgeBinner
+from app.services.processing import ProcessingService
 from app.settings import Settings
 
 
 class TrainingService(BaseModel):
+    processing_service: ProcessingService = Field(default_factory=ProcessingService)
     model_path: Path = Field(default=Settings.MODEL_PATH)
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -23,7 +24,11 @@ class TrainingService(BaseModel):
             if model:
                 return model
 
-        return make_pipeline(AgeBinner(), LogisticRegression(), memory="cache_folder")  # type: ignore[return-value]
+        return make_pipeline(
+            self.processing_service.pipeline,
+            LogisticRegression(),
+            memory="cache_folder",
+        )  # type: ignore[return-value]
 
     def train(self, df: DataFrame) -> MLModel:
         """
