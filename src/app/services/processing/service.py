@@ -1,5 +1,11 @@
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+
 from .age_binner.transformer import AgeBinner
-from .base import BasePreprocessor
+from .cholesterol_missingness.transformer import CholesterolMissingness
+from .column_selector.transformer import ColumnSelector
+from .imputer.transformer import Imputer
+from .waist_to_height_ratio.transformer import WaistToHeightRatio
 
 
 # pylint: disable=too-few-public-methods
@@ -7,10 +13,25 @@ class ProcessingService:
     """Encapsulates preprocessing pipeline configuration."""
 
     @property
-    def pipeline(self) -> BasePreprocessor:
-        """Returns the preprocessing pipeline transformer.
+    def pipeline(self) -> Pipeline:
+        """Returns the full preprocessing pipeline.
+
+        Steps (in order):
+            1. age_binner: bins RIDAGEYR into one-hot age groups
+            2. waist_to_height_ratio: computes ratio, drops BMXWAIST and BMXHT
+            3. cholesterol_missingness: adds missingness flag for told_high_cholesterol
+            4. column_selector: keeps exactly the 13 model features in canonical order
+            5. imputer: fills NaNs per column-group strategy (zero/median/passthrough)
+            6. scaler: standardises all features to mean=0, std=1
 
         Returns:
-            BasePreprocessor: Configured preprocessing transformer (AgeBinner).
+            Pipeline: Configured sklearn Pipeline ready to fit or transform.
         """
-        return AgeBinner()
+        return Pipeline([
+            ("age_binner", AgeBinner()),
+            ("waist_to_height_ratio", WaistToHeightRatio()),
+            ("cholesterol_missingness", CholesterolMissingness()),
+            ("column_selector", ColumnSelector()),
+            ("imputer", Imputer()),
+            ("scaler", StandardScaler().set_output(transform="pandas")),
+        ])
