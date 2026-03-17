@@ -1,15 +1,12 @@
-from typing import Self, cast
-
-from pandas import DataFrame, Series
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 
-from app.services.processing.base import BasePreprocessor
+from app.services.processing.base import StatefulPreprocessor
 
 from .config import ImputerConfig
 
 
-class Imputer(BasePreprocessor):
+class Imputer(StatefulPreprocessor):
     """Stateful imputer applying per-column-group strategies via ColumnTransformer.
 
     Strategy:
@@ -39,27 +36,3 @@ class Imputer(BasePreprocessor):
             verbose_feature_names_out=False,
         )
         self._column_transformer.set_output(transform="pandas")
-
-    def fit(self, X: DataFrame, y: Series | None = None) -> Self:
-        """Learn fill values from training data.
-
-        Args:
-            X: Training DataFrame with all 13 model features.
-            y: Ignored; present for sklearn pipeline compatibility.
-
-        Returns:
-            Self: The fitted imputer instance.
-        """
-        self._column_transformer.fit(X, y)
-        return self
-
-    def transform(self, X: DataFrame) -> DataFrame:
-        """Apply learned imputation to data.
-
-        Args:
-            X: DataFrame with all 13 model features.
-
-        Returns:
-            DataFrame with no NaN values and columns in canonical order.
-        """
-        return cast("DataFrame", self._column_transformer.transform(X))

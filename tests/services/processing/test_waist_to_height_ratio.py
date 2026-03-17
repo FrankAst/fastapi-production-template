@@ -1,5 +1,3 @@
-"""Tests for WaistToHeightRatio transformer."""
-
 import pandas as pd
 import pytest
 
@@ -9,7 +7,8 @@ from app.services.processing.waist_to_height_ratio.transformer import WaistToHei
 def test_computes_correct_ratio(waist_height_dataframe: pd.DataFrame) -> None:
     result = WaistToHeightRatio().transform(waist_height_dataframe)
 
-    assert result["waist_to_height_ratio"].tolist() == pytest.approx([0.5, 0.6])
+    expected = pytest.approx([0.5, 0.6])  # pyright: ignore[reportUnknownMemberType]
+    assert result["waist_to_height_ratio"].tolist() == expected
 
 
 def test_drops_source_columns(waist_height_dataframe: pd.DataFrame) -> None:
@@ -38,7 +37,7 @@ def test_edge_case_produces_expected_ratio(
     if expected is None:
         assert pd.isna(ratio)
     else:
-        assert ratio == pytest.approx(expected)
+        assert ratio == pytest.approx(expected)  # pyright: ignore[reportUnknownMemberType]
 
 
 def test_raises_on_missing_column() -> None:

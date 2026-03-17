@@ -1,5 +1,3 @@
-"""Tests for Imputer transformer."""
-
 import pandas as pd
 import pytest
 
@@ -29,8 +27,8 @@ def test_zero_fill_columns(imputer_dataframe_with_nans: pd.DataFrame) -> None:
         .transform(imputer_dataframe_with_nans)
     )
 
-    assert result["vigorous_minutes_per_week"].iloc[1] == pytest.approx(0.0)
-    assert result["drinking_frequency"].iloc[2] == pytest.approx(0.0)
+    assert result["vigorous_minutes_per_week"].iloc[1] == pytest.approx(0.0)  # pyright: ignore[reportUnknownMemberType]
+    assert result["drinking_frequency"].iloc[2] == pytest.approx(0.0)  # pyright: ignore[reportUnknownMemberType]
 
 
 def test_median_fill_columns(imputer_dataframe_with_nans: pd.DataFrame) -> None:
@@ -41,7 +39,7 @@ def test_median_fill_columns(imputer_dataframe_with_nans: pd.DataFrame) -> None:
         .transform(imputer_dataframe_with_nans)
     )
 
-    assert result["waist_to_height_ratio"].iloc[1] == pytest.approx(0.6)
+    assert result["waist_to_height_ratio"].iloc[1] == pytest.approx(0.6)  # pyright: ignore[reportUnknownMemberType]
 
 
 def test_passthrough_columns_unchanged(
@@ -68,7 +66,7 @@ def test_fit_transform_separation(
     imputer.fit(imputer_fit_dataframe)
     result = imputer.transform(imputer_transform_dataframe)
 
-    assert result["diastolic_bp"].iloc[0] == pytest.approx(80.0)
+    assert result["diastolic_bp"].iloc[0] == pytest.approx(80.0)  # pyright: ignore[reportUnknownMemberType]
 
 
 def test_no_nan_input_unchanged(imputer_dataframe_no_nans: pd.DataFrame) -> None:
@@ -77,7 +75,7 @@ def test_no_nan_input_unchanged(imputer_dataframe_no_nans: pd.DataFrame) -> None
     )
 
     for col in ZERO_FILL_COLS + MEDIAN_FILL_COLS + PASSTHROUGH_COLS:
-        assert result[col].tolist() == pytest.approx(
+        assert result[col].tolist() == pytest.approx(  # pyright: ignore[reportUnknownMemberType]
             imputer_dataframe_no_nans[col].tolist()
         )
 

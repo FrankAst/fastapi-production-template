@@ -1,10 +1,10 @@
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
 
 from .age_binner.transformer import AgeBinner
 from .cholesterol_missingness.transformer import CholesterolMissingness
 from .column_selector.transformer import ColumnSelector
 from .imputer.transformer import Imputer
+from .scaler.transformer import Scaler
 from .waist_to_height_ratio.transformer import WaistToHeightRatio
 
 
@@ -22,7 +22,7 @@ class ProcessingService:
             3. cholesterol_missingness: adds missingness flag for told_high_cholesterol
             4. column_selector: keeps exactly the 13 model features in canonical order
             5. imputer: fills NaNs per column-group strategy (zero/median/passthrough)
-            6. scaler: standardises all features to mean=0, std=1
+            6. scaler: standardises continuous features; binary features passed through
 
         Returns:
             Pipeline: Configured sklearn Pipeline ready to fit or transform.
@@ -33,5 +33,5 @@ class ProcessingService:
             ("cholesterol_missingness", CholesterolMissingness()),
             ("column_selector", ColumnSelector()),
             ("imputer", Imputer()),
-            ("scaler", StandardScaler().set_output(transform="pandas")),
+            ("scaler", Scaler()),
         ])

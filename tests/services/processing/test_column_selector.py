@@ -1,5 +1,3 @@
-"""Tests for ColumnSelector transformer."""
-
 import pandas as pd
 import pytest
 

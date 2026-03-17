@@ -1,5 +1,3 @@
-"""Tests for CholesterolMissingness transformer."""
-
 import pandas as pd
 import pytest
 
@@ -20,8 +18,8 @@ def test_retains_source_column(cholesterol_dataframe: pd.DataFrame) -> None:
     assert "told_high_cholesterol" in result.columns
     # NaN positions should remain NaN — the transformer does not impute
     assert pd.isna(result["told_high_cholesterol"].iloc[2])
-    assert result["told_high_cholesterol"].iloc[0] == pytest.approx(1.0)
-    assert result["told_high_cholesterol"].iloc[1] == pytest.approx(0.0)
+    assert result["told_high_cholesterol"].iloc[0] == pytest.approx(1.0)  # pyright: ignore[reportUnknownMemberType]
+    assert result["told_high_cholesterol"].iloc[1] == pytest.approx(0.0)  # pyright: ignore[reportUnknownMemberType]
 
 
 def test_preserves_other_columns(cholesterol_dataframe: pd.DataFrame) -> None:
