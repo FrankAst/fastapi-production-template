@@ -1,5 +1,8 @@
 """Tests for schema validation functionality."""
 
+import math
+from collections.abc import Callable
+
 import pandas as pd
 import pytest
 from pandera.errors import SchemaError, SchemaErrors
@@ -9,101 +12,107 @@ from app.domain.schema_validator import SchemaValidator
 
 
 def test_validate_dataframe_no_schema_file(
-    valid_prediction_dataframe: pd.DataFrame,
+    nhanes_training_dataframe: pd.DataFrame,
 ) -> None:
-    """
-    Test that validate_dataframe raises NoTrainingSchemaError when no schema exists.
-
-    This simulates a user trying to make predictions before training the model.
-    The schema file should not exist, and validation should fail appropriately.
-
-    Note: The mock_schema_directory fixture (autouse=True) ensures we're using
-    a temporary directory and not touching real schema files.
-    """
-    # Ensure no schema file exists
-    schema_path = SchemaValidator.get_schema_path()
-    if schema_path.exists():
-        schema_path.unlink()
-
-    # Attempt to validate should raise NoTrainingSchemaError
+    SchemaValidator.get_schema_path().unlink(missing_ok=True)
     with pytest.raises(NoTrainingSchemaError):
-        SchemaValidator.validate_dataframe(valid_prediction_dataframe)
+        SchemaValidator.validate_dataframe(nhanes_training_dataframe)
 
 
-def test_validate_dataframe_extra_columns(
-    valid_training_dataframe: pd.DataFrame,
-    prediction_with_extra_columns: pd.DataFrame,
+def test_validate_dataframe_rejects_extra_columns(
+    nhanes_training_dataframe: pd.DataFrame,
 ) -> None:
-    """
-    Test that validate_dataframe rejects data with extra columns.
-
-    This tests the strict=True enforcement. Prediction data should only
-    contain columns that were present in the training data.
-    The extra 'experience' column should cause validation to fail.
-    """
-    # First, create and save a schema from training data
-    SchemaValidator.infer_and_save_schema(valid_training_dataframe)
-
-    # Attempt to validate data with extra column should raise SchemaErrors
+    SchemaValidator.infer_and_save_schema(nhanes_training_dataframe)
+    df = nhanes_training_dataframe.drop(columns=["has_diabetes_or_prediabetes"]).assign(
+        extra_col=99.0
+    )
     with pytest.raises((SchemaError, SchemaErrors)):
-        SchemaValidator.validate_dataframe(prediction_with_extra_columns)
+        SchemaValidator.validate_dataframe(df)
 
 
-def test_validate_dataframe_missing_columns(
-    valid_training_dataframe: pd.DataFrame,
-    prediction_missing_columns: pd.DataFrame,
+def test_validate_dataframe_rejects_missing_columns(
+    nhanes_training_dataframe: pd.DataFrame,
 ) -> None:
-    """
-    Test that validate_dataframe rejects data with missing required columns.
-
-    Prediction data must contain all columns that were in the training schema.
-    Missing the 'education_years' column should cause validation to fail.
-    """
-    # First, create and save a schema from training data
-    SchemaValidator.infer_and_save_schema(valid_training_dataframe)
-
-    # Attempt to validate data with missing column should raise SchemaErrors
+    SchemaValidator.infer_and_save_schema(nhanes_training_dataframe)
+    df = nhanes_training_dataframe.drop(
+        columns=["has_diabetes_or_prediabetes", "RIDAGEYR"]
+    )
     with pytest.raises((SchemaError, SchemaErrors)):
-        SchemaValidator.validate_dataframe(prediction_missing_columns)
+        SchemaValidator.validate_dataframe(df)
 
 
-def test_validate_dataframe_type_coercion_failure(
-    valid_training_dataframe: pd.DataFrame,
-    prediction_with_wrong_types: pd.DataFrame,
+def test_validate_dataframe_rejects_incompatible_types(
+    nhanes_training_dataframe: pd.DataFrame,
 ) -> None:
-    """
-    Test that validate_dataframe rejects data with incompatible types.
-
-    When data types cannot be coerced (e.g., text to int), validation should fail.
-    The 'age' column has non-numeric text that cannot convert to int.
-    """
-    # First, create and save a schema from training data
-    SchemaValidator.infer_and_save_schema(valid_training_dataframe)
-
-    # Attempt to validate data with incompatible types should raise SchemaErrors
+    SchemaValidator.infer_and_save_schema(nhanes_training_dataframe)
+    df = nhanes_training_dataframe.drop(columns=["has_diabetes_or_prediabetes"]).assign(
+        RIDAGEYR=["not-a-number", "invalid", "bad"]
+    )
     with pytest.raises((SchemaError, SchemaErrors)):
-        SchemaValidator.validate_dataframe(prediction_with_wrong_types)
+        SchemaValidator.validate_dataframe(df)
 
 
-def test_validate_dataframe_column_order_independence(
-    valid_training_dataframe: pd.DataFrame,
-    prediction_with_reordered_columns: pd.DataFrame,
+def test_validate_dataframe_accepts_reordered_columns(
+    nhanes_training_dataframe: pd.DataFrame,
 ) -> None:
-    """
-    Test that validate_dataframe accepts data with columns in different order.
-
-    Pandera validates by column name, not position, so columns in a different
-    order than the training schema should still validate successfully.
-    This is important for real-world scenarios where column order may vary.
-    """
-    # First, create and save a schema from training data
-    SchemaValidator.infer_and_save_schema(valid_training_dataframe)
-
-    # Validate data with reordered columns - should succeed
-    result = SchemaValidator.validate_dataframe(prediction_with_reordered_columns)
-
-    # Verify we got a DataFrame back (validation passed)
+    SchemaValidator.infer_and_save_schema(nhanes_training_dataframe)
+    features = nhanes_training_dataframe.drop(columns=["has_diabetes_or_prediabetes"])
+    df = features[list(reversed(features.columns.tolist()))]
+    result = SchemaValidator.validate_dataframe(df)
     assert isinstance(result, pd.DataFrame)
-    assert len(result) == len(prediction_with_reordered_columns)
-    # Verify all expected columns are present
-    assert set(result.columns) == set(prediction_with_reordered_columns.columns)
+
+
+def test_validate_training_input_success(
+    nhanes_training_dataframe: pd.DataFrame,
+) -> None:
+    result = SchemaValidator.validate_training_input(nhanes_training_dataframe)
+    assert isinstance(result, pd.DataFrame)
+
+
+def test_validate_training_input_extra_columns_allowed(
+    nhanes_training_dataframe: pd.DataFrame,
+) -> None:
+    df = nhanes_training_dataframe.assign(extra_col=99.0)
+    result = SchemaValidator.validate_training_input(df)
+    assert isinstance(result, pd.DataFrame)
+
+
+def test_validate_training_input_nullable_column_accepts_nan(
+    nhanes_training_dataframe: pd.DataFrame,
+) -> None:
+    df = nhanes_training_dataframe.assign(BMXWAIST=math.nan)
+    result = SchemaValidator.validate_training_input(df)
+    assert isinstance(result, pd.DataFrame)
+
+
+@pytest.mark.parametrize(
+    "invalid_df",
+    [
+        pytest.param(
+            lambda df: df.drop(columns=["RIDAGEYR"]),
+            id="missing_required_column",
+        ),
+        pytest.param(
+            lambda df: df.assign(RIDAGEYR=5.0),
+            id="age_below_minimum",
+        ),
+        pytest.param(
+            lambda df: df.assign(has_diabetes_or_prediabetes=math.nan),
+            id="nan_in_non_nullable_target",
+        ),
+    ],
+)
+def test_validate_training_input_rejects_invalid_data(
+    nhanes_training_dataframe: pd.DataFrame,
+    invalid_df: Callable[[pd.DataFrame], pd.DataFrame],
+) -> None:
+    with pytest.raises((SchemaError, SchemaErrors)):
+        SchemaValidator.validate_training_input(invalid_df(nhanes_training_dataframe))
+
+
+def test_validate_training_input_no_schema_file(
+    nhanes_training_dataframe: pd.DataFrame,
+) -> None:
+    SchemaValidator.get_training_input_schema_path().unlink(missing_ok=True)
+    with pytest.raises(NoTrainingSchemaError):
+        SchemaValidator.validate_training_input(nhanes_training_dataframe)

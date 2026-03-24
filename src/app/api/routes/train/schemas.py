@@ -2,6 +2,7 @@ from fastapi import UploadFile
 from pandas import DataFrame
 
 from app.api.schema import BaseSchema
+from app.domain import SchemaValidator
 from app.utils import process_csv_file
 
 
@@ -17,9 +18,10 @@ class FileTrainRequest(BaseSchema):
         Create FileTrainRequest from uploaded file.
 
         Returns:
-            FileTrainRequest: An instance created from the uploaded file.
+            DataFrame: Validated and coerced training DataFrame.
         """
-        return await process_csv_file(file)
+        df = await process_csv_file(file)
+        return SchemaValidator.validate_training_input(df)
 
 
 class TrainResponse(BaseSchema):

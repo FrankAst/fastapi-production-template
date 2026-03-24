@@ -21,6 +21,17 @@ class SchemaValidator:
     """Handles dataset schema validation using Pandera."""
 
     SCHEMA_FILENAME = "training_schema.yaml"
+    TRAINING_INPUT_SCHEMA_FILENAME = "training_input_schema.yaml"
+
+    @classmethod
+    def get_training_input_schema_path(cls) -> Path:
+        """
+        Get the path to the static training input schema file.
+
+        Returns:
+            Path: Path to the training input schema YAML file.
+        """
+        return Settings.MODEL_DIRECTORY / cls.TRAINING_INPUT_SCHEMA_FILENAME
 
     @classmethod
     def get_schema_path(cls) -> Path:
@@ -85,6 +96,30 @@ class SchemaValidator:
             return None
 
         return pa.DataFrameSchema.from_yaml(schema_path)  # pyright: ignore[reportUnknownMemberType]
+
+    @classmethod
+    def validate_training_input(cls, df: DataFrame) -> DataFrame:
+        """
+        Validate raw training CSV against the static training input schema.
+
+        The static schema covers 12 raw features + the target column.
+        strict=False means extra columns are silently ignored, allowing users
+        to upload the full dataset without stripping columns first.
+
+        Args:
+            df: Raw DataFrame from the training CSV upload.
+
+        Returns:
+            DataFrame: Validated and coerced DataFrame.
+
+        Raises:
+            NoTrainingSchemaError: If the static schema YAML is missing.
+        """
+        schema_path = cls.get_training_input_schema_path()
+        if not schema_path.exists():
+            raise NoTrainingSchemaError
+        schema = pa.DataFrameSchema.from_yaml(schema_path)  # pyright: ignore[reportUnknownMemberType]
+        return schema.validate(df, lazy=True)
 
     @classmethod
     def validate_dataframe(cls, df: DataFrame) -> DataFrame:
