@@ -9,6 +9,7 @@ from pandera import DataFrameSchema
 
 from app.settings import Settings
 
+from .constants import TARGET_COLUMN
 from .exceptions import NoTrainingSchemaError
 
 if TYPE_CHECKING:
@@ -60,8 +61,8 @@ class SchemaValidator:
         Returns:
             DataFrameSchema: The inferred schema.
         """
-        # Get feature columns only (exclude target - last column)
-        features_df = df.iloc[:, :-1]
+        # Get feature columns only (exclude target)
+        features_df = df.drop(columns=[TARGET_COLUMN])
 
         # Infer base schema from the features
         schema = pa.infer_schema(features_df)

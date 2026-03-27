@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 
-from app.domain import MLModel, SchemaValidator
+from app.domain import TARGET_COLUMN, MLModel, SchemaValidator
 from app.services.helper import load_model, save_model
 from app.services.processing import ProcessingService
 from app.settings import Settings
@@ -52,8 +52,8 @@ class TrainingService(BaseModel):
         SchemaValidator.infer_and_save_schema(df)
 
         # Split features and target
-        X = df.iloc[:, :-1]  # Features as DataFrame
-        y = df.iloc[:, -1].tolist()  # Target as list of floats
+        X = df.drop(columns=[TARGET_COLUMN])
+        y = df[TARGET_COLUMN].tolist()
 
         pipeline = self.model
         pipeline_fit = pipeline.fit(X, y)

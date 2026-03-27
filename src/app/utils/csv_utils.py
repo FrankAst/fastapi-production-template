@@ -6,6 +6,8 @@ import pandas as pd
 from fastapi import HTTPException, UploadFile
 from pandas import DataFrame
 
+from app.domain.constants import TARGET_COLUMN
+
 # CSV validation constants
 SUPPORTED_CSV_EXTENSION = ".csv"
 MIN_REQUIRED_COLUMNS = 2
@@ -81,23 +83,28 @@ def _parse_csv_to_dataframe(csv_content: str) -> DataFrame:
 
 def _validate_target_column(df: DataFrame) -> None:
     """
-    Validate that the target column (last column) doesn't contain NaN values.
+    Validate that the target column doesn't contain NaN values.
 
     Args:
         df: The DataFrame to validate.
 
     Raises:
-        HTTPException: If the target column contains NaN values.
+        HTTPException: If the target column contains NaN values or is missing.
     """
     if df.empty:
         return
 
-    target_column = df.iloc[:, -1]
-    if target_column.isna().any():
+    if TARGET_COLUMN not in df.columns:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Missing required target column: '{TARGET_COLUMN}'.",
+        )
+
+    if df[TARGET_COLUMN].isna().any():
         raise HTTPException(
             status_code=400,
             detail=(
-                "Target column (last column) contains missing values. "
+                f"Target column '{TARGET_COLUMN}' contains missing values. "
                 "Please ensure all target values are provided."
             ),
         )
@@ -134,7 +141,7 @@ async def process_csv_file(file: UploadFile) -> DataFrame:
     _validate_csv_filename_extension(file.filename)
     csv_content = await _read_and_decode_csv_content(file)
     df = _parse_csv_to_dataframe(csv_content)
-    _validate_target_column(df)
     _validate_number_of_columns(df)
+    _validate_target_column(df)
 
     return df

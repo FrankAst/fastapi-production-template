@@ -1,4 +1,5 @@
 from .base import BaseEntity
+from .constants import TARGET_COLUMN
 from .exceptions import (
     FeaturesContainNaNError,
     FeaturesEmptyError,
@@ -10,6 +11,7 @@ from .prediction_output import PredictionOutput
 from .schema_validator import SchemaValidator
 
 __all__ = [
+    "TARGET_COLUMN",
     "BaseEntity",
     "FeaturesContainNaNError",
     "FeaturesEmptyError",
