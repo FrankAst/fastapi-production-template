@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 
 import joblib
 
@@ -14,3 +15,7 @@ def load_model(model_path: Path) -> MLModel | None:
 
 def save_model(model: MLModel, model_path: Path) -> None:
     joblib.dump(model, model_path)
+
+
+def save_artifact(artifact: Any, path: Path) -> None:
+    joblib.dump(artifact, path)

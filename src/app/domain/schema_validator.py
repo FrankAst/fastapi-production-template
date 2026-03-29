@@ -9,7 +9,6 @@ from pandera import DataFrameSchema
 
 from app.settings import Settings
 
-from .constants import TARGET_COLUMN
 from .exceptions import NoTrainingSchemaError
 
 if TYPE_CHECKING:
@@ -47,25 +46,25 @@ class SchemaValidator:
     @classmethod
     def infer_and_save_schema(cls, df: DataFrame) -> DataFrameSchema:
         """
-        Infer Pandera schema from training data and save it.
+        Infer Pandera schema from feature data and save it for prediction validation.
 
-        This method creates a schema from the feature columns (excluding target),
+        This method creates a schema from raw feature columns (target already excluded),
         configured to be lenient for prediction use:
         - Coerce types when possible
         - Allow missing values (nullable=True for all columns)
 
+        The caller is responsible for passing features-only data (no target column).
+        The saved schema is used at prediction time to validate raw input before
+        the preprocessing pipeline runs.
+
         Args:
-            df: Training DataFrame with features and target column.
-                The last column is assumed to be the target.
+            df: Features-only DataFrame (target column must be excluded by the caller).
 
         Returns:
             DataFrameSchema: The inferred schema.
         """
-        # Get feature columns only (exclude target)
-        features_df = df.drop(columns=[TARGET_COLUMN])
-
         # Infer base schema from the features
-        schema = pa.infer_schema(features_df)
+        schema = pa.infer_schema(df)
 
         # Make schema lenient for prediction:
         # 1. Enable type coercion

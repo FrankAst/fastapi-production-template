@@ -22,6 +22,22 @@ class _Settings(BaseSettings):
         return self.MODEL_DIRECTORY / "model.joblib"
 
     @property
+    def PRODUCTION_MODEL_PATH(self) -> Path:
+        return self.MODEL_DIRECTORY / "production_model.joblib"
+
+    @property
+    def EVAL_MODEL_PATH(self) -> Path:
+        return self.MODEL_DIRECTORY / "eval_model.joblib"
+
+    @property
+    def BOOTSTRAP_ENSEMBLE_PATH(self) -> Path:
+        return self.MODEL_DIRECTORY / "bootstrap_ensemble.joblib"
+
+    @property
+    def TEST_SET_PATH(self) -> Path:
+        return self.MODEL_DIRECTORY / "test_set.joblib"
+
+    @property
     def SOCKET_URL(self) -> str:
         return f"http://{self.HOST}:{{port}}"
 

@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 from pandera.errors import SchemaError, SchemaErrors
 
+from app.domain.constants import TARGET_COLUMN
 from app.domain.exceptions import NoTrainingSchemaError
 from app.domain.schema_validator import SchemaValidator
 
@@ -22,7 +23,9 @@ def test_validate_dataframe_no_schema_file(
 def test_validate_dataframe_rejects_extra_columns(
     nhanes_training_dataframe: pd.DataFrame,
 ) -> None:
-    SchemaValidator.infer_and_save_schema(nhanes_training_dataframe)
+    SchemaValidator.infer_and_save_schema(
+        nhanes_training_dataframe.drop(columns=[TARGET_COLUMN])
+    )
     df = nhanes_training_dataframe.drop(columns=["has_diabetes_or_prediabetes"]).assign(
         extra_col=99.0
     )
@@ -33,7 +36,9 @@ def test_validate_dataframe_rejects_extra_columns(
 def test_validate_dataframe_rejects_missing_columns(
     nhanes_training_dataframe: pd.DataFrame,
 ) -> None:
-    SchemaValidator.infer_and_save_schema(nhanes_training_dataframe)
+    SchemaValidator.infer_and_save_schema(
+        nhanes_training_dataframe.drop(columns=[TARGET_COLUMN])
+    )
     df = nhanes_training_dataframe.drop(
         columns=["has_diabetes_or_prediabetes", "RIDAGEYR"]
     )
@@ -44,7 +49,9 @@ def test_validate_dataframe_rejects_missing_columns(
 def test_validate_dataframe_rejects_incompatible_types(
     nhanes_training_dataframe: pd.DataFrame,
 ) -> None:
-    SchemaValidator.infer_and_save_schema(nhanes_training_dataframe)
+    SchemaValidator.infer_and_save_schema(
+        nhanes_training_dataframe.drop(columns=[TARGET_COLUMN])
+    )
     df = nhanes_training_dataframe.drop(columns=["has_diabetes_or_prediabetes"]).assign(
         RIDAGEYR=["not-a-number", "invalid", "bad"]
     )
@@ -55,7 +62,9 @@ def test_validate_dataframe_rejects_incompatible_types(
 def test_validate_dataframe_accepts_reordered_columns(
     nhanes_training_dataframe: pd.DataFrame,
 ) -> None:
-    SchemaValidator.infer_and_save_schema(nhanes_training_dataframe)
+    SchemaValidator.infer_and_save_schema(
+        nhanes_training_dataframe.drop(columns=[TARGET_COLUMN])
+    )
     features = nhanes_training_dataframe.drop(columns=["has_diabetes_or_prediabetes"])
     df = features[list(reversed(features.columns.tolist()))]
     result = SchemaValidator.validate_dataframe(df)

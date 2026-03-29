@@ -10,7 +10,7 @@ from .exceptions import NoTrainedModelError
 
 
 class PredictionService(BaseModel):
-    model_path: Path = Field(default=Settings.MODEL_PATH)
+    model_path: Path = Field(default=Settings.PRODUCTION_MODEL_PATH)
 
     @property
     def model(self) -> MLModel | None:

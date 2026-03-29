@@ -6,6 +6,7 @@ from .exceptions import (
     NoTrainingSchemaError,
 )
 from .ml_model import MLModel
+from .models import LRVifBicConfig
 from .prediction_input import PredictionInput
 from .prediction_output import PredictionOutput
 from .schema_validator import SchemaValidator
@@ -15,6 +16,7 @@ __all__ = [
     "BaseEntity",
     "FeaturesContainNaNError",
     "FeaturesEmptyError",
+    "LRVifBicConfig",
     "MLModel",
     "NoTrainingSchemaError",
     "PredictionInput",
