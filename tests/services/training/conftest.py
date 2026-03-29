@@ -1,7 +1,6 @@
 # pylint: disable=duplicate-code
 from collections.abc import Generator
 from pathlib import Path
-from unittest.mock import patch
 
 import pandas as pd
 import pytest
@@ -33,11 +32,7 @@ def mock_artifact_paths(tmp_path: Path) -> Generator[None]:
     original = {attr: getattr(type(Settings), attr) for attr in paths}
     for attr, p in paths.items():
         setattr(type(Settings), attr, property(lambda _, val=p: val))  # type: ignore[misc]
-    with patch(
-        "app.domain.schema_validator.SchemaValidator.get_schema_path",
-        return_value=tmp_path / "training_schema.yaml",
-    ):
-        yield
+    yield
     for attr, prop in original.items():
         setattr(type(Settings), attr, prop)
 

@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.utils import resample
 
-from app.domain import TARGET_COLUMN, LRVifBicConfig, MLModel, SchemaValidator
+from app.domain import TARGET_COLUMN, LRVifBicConfig, MLModel
 from app.services.helper import save_artifact, save_model
 from app.services.processing import ProcessingService
 from app.settings import Settings
@@ -82,9 +82,6 @@ class TrainingService(BaseModel):
         """
         pipeline = self._create_pipeline()
         pipeline.fit(X, y)
-
-        SchemaValidator.infer_and_save_schema(X)
-
         save_model(cast("MLModel", pipeline), Settings.PRODUCTION_MODEL_PATH)
 
     def _train_bootstrap(self, X: DataFrame, y: Series) -> None:

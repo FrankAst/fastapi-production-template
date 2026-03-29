@@ -15,7 +15,7 @@ from app.domain.schema_validator import SchemaValidator
 def test_validate_dataframe_no_schema_file(
     nhanes_training_dataframe: pd.DataFrame,
 ) -> None:
-    SchemaValidator.get_schema_path().unlink(missing_ok=True)
+    SchemaValidator.get_training_input_schema_path().unlink(missing_ok=True)
     with pytest.raises(NoTrainingSchemaError):
         SchemaValidator.validate_dataframe(nhanes_training_dataframe)
 
@@ -23,12 +23,7 @@ def test_validate_dataframe_no_schema_file(
 def test_validate_dataframe_rejects_extra_columns(
     nhanes_training_dataframe: pd.DataFrame,
 ) -> None:
-    SchemaValidator.infer_and_save_schema(
-        nhanes_training_dataframe.drop(columns=[TARGET_COLUMN])
-    )
-    df = nhanes_training_dataframe.drop(columns=["has_diabetes_or_prediabetes"]).assign(
-        extra_col=99.0
-    )
+    df = nhanes_training_dataframe.drop(columns=[TARGET_COLUMN]).assign(extra_col=99.0)
     with pytest.raises((SchemaError, SchemaErrors)):
         SchemaValidator.validate_dataframe(df)
 
@@ -36,12 +31,7 @@ def test_validate_dataframe_rejects_extra_columns(
 def test_validate_dataframe_rejects_missing_columns(
     nhanes_training_dataframe: pd.DataFrame,
 ) -> None:
-    SchemaValidator.infer_and_save_schema(
-        nhanes_training_dataframe.drop(columns=[TARGET_COLUMN])
-    )
-    df = nhanes_training_dataframe.drop(
-        columns=["has_diabetes_or_prediabetes", "RIDAGEYR"]
-    )
+    df = nhanes_training_dataframe.drop(columns=[TARGET_COLUMN, "RIDAGEYR"])
     with pytest.raises((SchemaError, SchemaErrors)):
         SchemaValidator.validate_dataframe(df)
 
@@ -49,10 +39,7 @@ def test_validate_dataframe_rejects_missing_columns(
 def test_validate_dataframe_rejects_incompatible_types(
     nhanes_training_dataframe: pd.DataFrame,
 ) -> None:
-    SchemaValidator.infer_and_save_schema(
-        nhanes_training_dataframe.drop(columns=[TARGET_COLUMN])
-    )
-    df = nhanes_training_dataframe.drop(columns=["has_diabetes_or_prediabetes"]).assign(
+    df = nhanes_training_dataframe.drop(columns=[TARGET_COLUMN]).assign(
         RIDAGEYR=["not-a-number", "invalid", "bad"]
     )
     with pytest.raises((SchemaError, SchemaErrors)):
@@ -62,10 +49,7 @@ def test_validate_dataframe_rejects_incompatible_types(
 def test_validate_dataframe_accepts_reordered_columns(
     nhanes_training_dataframe: pd.DataFrame,
 ) -> None:
-    SchemaValidator.infer_and_save_schema(
-        nhanes_training_dataframe.drop(columns=[TARGET_COLUMN])
-    )
-    features = nhanes_training_dataframe.drop(columns=["has_diabetes_or_prediabetes"])
+    features = nhanes_training_dataframe.drop(columns=[TARGET_COLUMN])
     df = features[list(reversed(features.columns.tolist()))]
     result = SchemaValidator.validate_dataframe(df)
     assert isinstance(result, pd.DataFrame)

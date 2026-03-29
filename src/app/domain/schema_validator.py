@@ -9,6 +9,7 @@ from pandera import DataFrameSchema
 
 from app.settings import Settings
 
+from .constants import TARGET_COLUMN
 from .exceptions import NoTrainingSchemaError
 
 if TYPE_CHECKING:
@@ -20,7 +21,6 @@ if TYPE_CHECKING:
 class SchemaValidator:
     """Handles dataset schema validation using Pandera."""
 
-    SCHEMA_FILENAME = "training_schema.yaml"
     TRAINING_INPUT_SCHEMA_FILENAME = "training_input_schema.yaml"
 
     @classmethod
@@ -32,70 +32,6 @@ class SchemaValidator:
             Path: Path to the training input schema YAML file.
         """
         return Settings.MODEL_DIRECTORY / cls.TRAINING_INPUT_SCHEMA_FILENAME
-
-    @classmethod
-    def get_schema_path(cls) -> Path:
-        """
-        Get the path to the saved schema file.
-
-        Returns:
-            Path: Path to the training schema YAML file.
-        """
-        return Settings.MODEL_DIRECTORY / cls.SCHEMA_FILENAME
-
-    @classmethod
-    def infer_and_save_schema(cls, df: DataFrame) -> DataFrameSchema:
-        """
-        Infer Pandera schema from feature data and save it for prediction validation.
-
-        This method creates a schema from raw feature columns (target already excluded),
-        configured to be lenient for prediction use:
-        - Coerce types when possible
-        - Allow missing values (nullable=True for all columns)
-
-        The caller is responsible for passing features-only data (no target column).
-        The saved schema is used at prediction time to validate raw input before
-        the preprocessing pipeline runs.
-
-        Args:
-            df: Features-only DataFrame (target column must be excluded by the caller).
-
-        Returns:
-            DataFrameSchema: The inferred schema.
-        """
-        # Infer base schema from the features
-        schema = pa.infer_schema(df)
-
-        # Make schema lenient for prediction:
-        # 1. Enable type coercion
-        # 2. Make all columns nullable (allow missing values)
-        for column_schema in schema.columns.values():
-            column_schema.nullable = True
-            column_schema.coerce = True
-
-        # Configure DataFrame-level settings
-        schema.coerce = True  # Enable coercion at DataFrame level
-        schema.strict = True  # Forbid columns not in schema
-
-        # Save schema to YAML for reuse
-        schema_path = cls.get_schema_path()
-        schema.to_yaml(schema_path)  # pyright: ignore[reportUnknownMemberType]
-
-        return schema
-
-    @classmethod
-    def load_schema(cls) -> DataFrameSchema | None:
-        """
-        Load the saved Pandera schema from disk.
-
-        Returns:
-            DataFrameSchema if schema file exists, None otherwise.
-        """
-        schema_path = cls.get_schema_path()
-        if not schema_path.exists():
-            return None
-
-        return pa.DataFrameSchema.from_yaml(schema_path)  # pyright: ignore[reportUnknownMemberType]
 
     @classmethod
     def validate_training_input(cls, df: DataFrame) -> DataFrame:
@@ -124,28 +60,27 @@ class SchemaValidator:
     @classmethod
     def validate_dataframe(cls, df: DataFrame) -> DataFrame:
         """
-        Validate a DataFrame against the saved schema.
+        Validate prediction input against the static training input schema.
 
-        This validates prediction input data against the schema created
-        from raw training dataset. The validation is lenient:
-        - Attempts type coercion
-        - Allows missing values
-        - Forbids extra columns not in the training schema
+        Loads the same schema used for training CSV validation, strips the target
+        column (not present at inference time), and enforces strict=True so that
+        any column not in the schema is rejected. This guarantees the prediction
+        endpoint receives exactly the raw features the pipeline expects, regardless
+        of what extra columns may have been present in the training CSV.
 
         Args:
-            df: DataFrame to validate (raw prediction input).
+            df: Features-only DataFrame from the prediction CSV upload.
 
         Returns:
             DataFrame: Validated and coerced DataFrame.
 
         Raises:
-            NoTrainingSchemaError: If no schema file exists (model not trained).
+            NoTrainingSchemaError: If the static schema YAML is missing.
         """
-        schema = cls.load_schema()
-
-        if schema is None:
+        schema_path = cls.get_training_input_schema_path()
+        if not schema_path.exists():
             raise NoTrainingSchemaError
-
-        # Validate and return the coerced DataFrame
-        # Pandera will raise SchemaError with detailed information if validation fails
+        schema: DataFrameSchema = pa.DataFrameSchema.from_yaml(schema_path)  # pyright: ignore[reportUnknownMemberType]
+        schema = schema.remove_columns([TARGET_COLUMN])
+        schema.strict = True
         return schema.validate(df, lazy=True)

@@ -37,10 +37,9 @@ def nhanes_training_dataframe() -> pd.DataFrame:
 
 @pytest.fixture(autouse=True)
 def mock_schema_directory(tmp_path: Path) -> Generator[None]:
-    """Mock both schema paths to isolated temp directories."""
-    schema_path = tmp_path / "ml_binaries" / "training_schema.yaml"
+    """Redirect the training input schema path to an isolated temp directory."""
     training_input_schema_path = tmp_path / "ml_binaries" / "training_input_schema.yaml"
-    schema_path.parent.mkdir(parents=True, exist_ok=True)
+    training_input_schema_path.parent.mkdir(parents=True, exist_ok=True)
 
     real_schema = (
         Path(__file__).resolve().parents[2]
@@ -52,14 +51,8 @@ def mock_schema_directory(tmp_path: Path) -> Generator[None]:
     if real_schema.exists():
         shutil.copy(real_schema, training_input_schema_path)
 
-    with (
-        patch(
-            "app.domain.schema_validator.SchemaValidator.get_schema_path",
-            return_value=schema_path,
-        ),
-        patch(
-            "app.domain.schema_validator.SchemaValidator.get_training_input_schema_path",
-            return_value=training_input_schema_path,
-        ),
+    with patch(
+        "app.domain.schema_validator.SchemaValidator.get_training_input_schema_path",
+        return_value=training_input_schema_path,
     ):
         yield
