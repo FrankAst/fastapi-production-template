@@ -19,3 +19,9 @@ def save_model(model: MLModel, model_path: Path) -> None:
 
 def save_artifact(artifact: Any, path: Path) -> None:
     joblib.dump(artifact, path)
+
+
+def load_artifact(path: Path) -> Any:
+    if not path.exists():
+        return None
+    return joblib.load(path)
