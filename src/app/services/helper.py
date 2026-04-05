@@ -29,3 +29,9 @@ def save_artifact(artifact: Any, path: Path) -> None:
         joblib.dump(artifact, path)
     except OSError as e:
         raise ArtifactPersistError(path) from e
+
+
+def load_artifact(path: Path) -> Any:
+    if not path.exists():
+        return None
+    return joblib.load(path)
