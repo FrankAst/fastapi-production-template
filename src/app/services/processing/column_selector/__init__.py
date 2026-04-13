@@ -1,8 +1,7 @@
-from .config import SELECTED_FEATURES, ColumnSelectorConfig
+from .config import SELECTED_FEATURES
 from .transformer import ColumnSelector
 
 __all__ = [
     "SELECTED_FEATURES",
     "ColumnSelector",
-    "ColumnSelectorConfig",
 ]

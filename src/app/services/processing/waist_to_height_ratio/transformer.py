@@ -13,14 +13,32 @@ class WaistToHeightRatio(BasePreprocessor):
         super().__init__()
         self.config = WaistToHeightRatioConfig()
 
+    def _validate_columns_exist(self, d: DataFrame) -> None:
+        """Validate that required columns exist in the DataFrame.
+
+        Args:
+            d: Input DataFrame to validate.
+
+        Raises:
+            ValueError: If any required column is missing.
+        """
+        missing_columns = [
+            col
+            for col in (self.config.waist_column, self.config.height_column)
+            if col not in d.columns
+        ]
+        if missing_columns:
+            message = "Missing required columns: " + ", ".join(missing_columns)
+            raise ValueError(message)
+
     def _compute_ratio(self, d: DataFrame) -> DataFrame:
-        """Add waist-to-height ratio column; guard against zero-height division.
+        """Add waist-to-height ratio column.
 
         Args:
             d: Input DataFrame containing waist and height columns.
 
         Returns:
-            DataFrame with ratio column added (source columns still present).
+            Augmented DataFrame with ratio column added.
         """
         df = d.copy()
         height = df[self.config.height_column].replace(0, np.nan)

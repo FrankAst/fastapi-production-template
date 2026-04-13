@@ -88,4 +88,4 @@ def test_column_names_preserved(imputer_dataframe_with_nans: pd.DataFrame) -> No
     )
 
     expected_cols = ZERO_FILL_COLS + MEDIAN_FILL_COLS + PASSTHROUGH_COLS
-    assert list(result.columns) == expected_cols
+    assert list(result.columns) == list(expected_cols)

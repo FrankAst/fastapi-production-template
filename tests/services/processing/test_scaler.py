@@ -42,7 +42,7 @@ def test_fit_transform_separation(
 def test_column_names_preserved(scaler_dataframe: pd.DataFrame) -> None:
     result = Scaler().fit(scaler_dataframe).transform(scaler_dataframe)
 
-    assert list(result.columns) == CONTINUOUS_COLS + BINARY_COLS
+    assert list(result.columns) == list(CONTINUOUS_COLS + BINARY_COLS)
 
 
 def test_output_is_dataframe(scaler_dataframe: pd.DataFrame) -> None:

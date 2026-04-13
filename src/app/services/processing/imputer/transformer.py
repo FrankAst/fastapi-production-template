@@ -3,7 +3,7 @@ from sklearn.impute import SimpleImputer
 
 from app.services.processing.base import StatefulPreprocessor
 
-from .config import ImputerConfig
+from .config import MEDIAN_FILL_COLS, PASSTHROUGH_COLS, ZERO_FILL_COLS
 
 
 class Imputer(StatefulPreprocessor):
@@ -17,20 +17,19 @@ class Imputer(StatefulPreprocessor):
 
     def __init__(self) -> None:
         super().__init__()
-        self.config = ImputerConfig()
         self._column_transformer = ColumnTransformer(
             transformers=[
                 (
                     "zero_fill",
                     SimpleImputer(strategy="constant", fill_value=0),
-                    self.config.zero_fill_cols,
+                    ZERO_FILL_COLS,
                 ),
                 (
                     "median_fill",
                     SimpleImputer(strategy="median"),
-                    self.config.median_fill_cols,
+                    MEDIAN_FILL_COLS,
                 ),
-                ("passthrough", "passthrough", self.config.passthrough_cols),
+                ("passthrough", "passthrough", PASSTHROUGH_COLS),
             ],
             remainder="drop",
             verbose_feature_names_out=False,

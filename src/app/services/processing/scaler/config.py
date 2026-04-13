@@ -1,15 +1,13 @@
-from pydantic import BaseModel
-
-BINARY_COLS: list[str] = [
+BINARY_COLS: tuple[str, ...] = (
     "young_adult",
     "elderly",
     "told_high_cholesterol_missing",
     "told_high_bp",
     "told_high_cholesterol",
     "is_female",
-]
+)
 
-CONTINUOUS_COLS: list[str] = [
+CONTINUOUS_COLS: tuple[str, ...] = (
     "waist_to_height_ratio",
     "drinking_frequency",
     "diastolic_bp",
@@ -17,11 +15,4 @@ CONTINUOUS_COLS: list[str] = [
     "education_level",
     "phq9_score",
     "vigorous_minutes_per_week",
-]
-
-
-class ScalerConfig(BaseModel):
-    """Configuration for Scaler transformer."""
-
-    binary_cols: list[str] = BINARY_COLS
-    continuous_cols: list[str] = CONTINUOUS_COLS
+)

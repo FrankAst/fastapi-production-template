@@ -58,7 +58,7 @@ class AgeBinner(BasePreprocessor):
         return df
 
     def _one_hot_encode(self, d: DataFrame) -> DataFrame:
-        dummies = pd.get_dummies(d[self.config.age_group_col]).astype(int)
+        dummies = pd.get_dummies(d[self.config.age_group_col], dtype=int)
         dummies.columns = dummies.columns.astype(str)
         return d.join(dummies)
 

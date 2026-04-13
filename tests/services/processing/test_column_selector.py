@@ -8,7 +8,7 @@ from app.services.processing.column_selector.transformer import ColumnSelector
 def test_selects_correct_features(post_fe_dataframe: pd.DataFrame) -> None:
     result = ColumnSelector().transform(post_fe_dataframe)
 
-    assert list(result.columns) == SELECTED_FEATURES
+    assert list(result.columns) == list(SELECTED_FEATURES)
     assert result.shape[1] == len(SELECTED_FEATURES)
 
 
@@ -23,7 +23,7 @@ def test_drops_extra_columns(post_fe_dataframe: pd.DataFrame) -> None:
 def test_enforces_column_order(shuffled_post_fe_dataframe: pd.DataFrame) -> None:
     result = ColumnSelector().transform(shuffled_post_fe_dataframe)
 
-    assert list(result.columns) == SELECTED_FEATURES
+    assert list(result.columns) == list(SELECTED_FEATURES)
 
 
 def test_raises_on_missing_feature() -> None:

@@ -1,6 +1,4 @@
-from pydantic import BaseModel
-
-SELECTED_FEATURES: list[str] = [
+SELECTED_FEATURES: tuple[str, ...] = (
     "young_adult",
     "elderly",
     "waist_to_height_ratio",
@@ -14,10 +12,4 @@ SELECTED_FEATURES: list[str] = [
     "education_level",
     "phq9_score",
     "vigorous_minutes_per_week",
-]
-
-
-class ColumnSelectorConfig(BaseModel):
-    """Configuration for ColumnSelector transformer."""
-
-    features: list[str] = SELECTED_FEATURES
+)

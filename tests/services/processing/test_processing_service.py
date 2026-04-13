@@ -17,7 +17,7 @@ def test_pipeline_output_columns(pipeline_dataframe: pd.DataFrame) -> None:
         ProcessingService().pipeline.fit_transform(pipeline_dataframe),  # pyright: ignore[reportUnknownMemberType]
     )
 
-    assert list(result.columns) == CONTINUOUS_COLS + BINARY_COLS
+    assert list(result.columns) == list(CONTINUOUS_COLS + BINARY_COLS)
 
 
 def test_pipeline_no_nans_in_output(

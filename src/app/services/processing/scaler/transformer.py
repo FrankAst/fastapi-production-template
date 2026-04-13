@@ -3,7 +3,7 @@ from sklearn.preprocessing import StandardScaler
 
 from app.services.processing.base import StatefulPreprocessor
 
-from .config import ScalerConfig
+from .config import BINARY_COLS, CONTINUOUS_COLS
 
 
 class Scaler(StatefulPreprocessor):
@@ -17,11 +17,10 @@ class Scaler(StatefulPreprocessor):
 
     def __init__(self) -> None:
         super().__init__()
-        self.config = ScalerConfig()
         self._column_transformer = ColumnTransformer(
             transformers=[
-                ("scale", StandardScaler(), self.config.continuous_cols),
-                ("passthrough", "passthrough", self.config.binary_cols),
+                ("scale", StandardScaler(), CONTINUOUS_COLS),
+                ("passthrough", "passthrough", BINARY_COLS),
             ],
             remainder="drop",
             verbose_feature_names_out=False,
