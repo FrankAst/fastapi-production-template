@@ -1,8 +1,10 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class WaistToHeightRatioConfig(BaseModel):
     """Configuration for WaistToHeightRatio transformer."""
+
+    model_config = ConfigDict(frozen=True)
 
     waist_column: str = Field(
         default="BMXWAIST",

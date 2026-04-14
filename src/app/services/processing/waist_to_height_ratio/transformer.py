@@ -15,6 +15,7 @@ class WaistToHeightRatio(BasePreprocessor):
 
     def _validate_columns_exist(self, d: DataFrame) -> None:
         """Validate that required columns exist in the DataFrame.
+        Rows with negative or missing height produce NaN ratios.
 
         Args:
             d: Input DataFrame to validate.
@@ -22,14 +23,14 @@ class WaistToHeightRatio(BasePreprocessor):
         Raises:
             ValueError: If any required column is missing.
         """
-        missing_columns = [
-            col
-            for col in (self.config.waist_column, self.config.height_column)
-            if col not in d.columns
-        ]
-        if missing_columns:
-            message = "Missing required columns: " + ", ".join(missing_columns)
-            raise ValueError(message)
+        required = {self.config.waist_column, self.config.height_column}
+        missing = required - set(d.columns)
+        if missing:
+            msg = (
+                f"{self.__class__.__name__} requires columns {missing}, "
+                f"but they are missing from the input DataFrame."
+            )
+            raise ValueError(msg)
 
     def _compute_ratio(self, d: DataFrame) -> DataFrame:
         """Add waist-to-height ratio column.
@@ -41,7 +42,10 @@ class WaistToHeightRatio(BasePreprocessor):
             Augmented DataFrame with ratio column added.
         """
         df = d.copy()
-        height = df[self.config.height_column].replace(0, np.nan)
+        height = df[self.config.height_column].where(
+            df[self.config.height_column] > 0, np.nan
+        )
+
         df[self.config.output_column] = df[self.config.waist_column] / height
         return df
 
@@ -54,6 +58,8 @@ class WaistToHeightRatio(BasePreprocessor):
         Returns:
             DataFrame with ratio column added and source columns removed.
         """
+        self._validate_columns_exist(X)
+
         return X.pipe(self._compute_ratio).drop(
             columns=[self.config.waist_column, self.config.height_column]
         )

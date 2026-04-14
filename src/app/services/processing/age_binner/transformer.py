@@ -34,22 +34,24 @@ class AgeBinner(BasePreprocessor):
             The computed age group labels for each row. This Series is later
             added to the DataFrame as the `age_group` column.
         """
-        return (
-            pd
-            .cut(
-                d[self.config.age_column].where(
-                    d[self.config.age_column] != self.config.elderly_top_coded_age
-                ),
-                bins=self.config.age_bins,
-                labels=self.config.age_labels,
-                right=False,
-            )
-            .cat.add_categories([self.config.elderly_label, self.config.unknown_label])
-            .mask(
-                d[self.config.age_column] == self.config.elderly_top_coded_age,
-                self.config.elderly_label,
-            )
-            .fillna(self.config.unknown_label)
+        age = d[self.config.age_column]
+        is_elderly = age == self.config.elderly_top_coded_age
+
+        non_elderly_age = age.where(~is_elderly)
+        binned = pd.cut(
+            non_elderly_age,
+            bins=self.config.age_bins,
+            labels=self.config.age_labels,
+            right=False,
+        )
+
+        binned = binned.cat.add_categories([
+            self.config.elderly_label,
+            self.config.unknown_label,
+        ])
+
+        return binned.mask(is_elderly, self.config.elderly_label).fillna(
+            self.config.unknown_label
         )
 
     def _add_age_group_column(self, d: DataFrame) -> DataFrame:
