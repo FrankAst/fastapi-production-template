@@ -35,7 +35,7 @@ class AgeBinner(BasePreprocessor):
             added to the DataFrame as the `age_group` column.
         """
         age = d[self.config.age_column]
-        is_elderly = age == self.config.elderly_top_coded_age
+        is_elderly = age >= self.config.elderly_top_coded_age
 
         non_elderly_age = age.where(~is_elderly)
         binned = pd.cut(
