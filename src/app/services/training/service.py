@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.utils import resample
 
-from app.domain import TARGET_COLUMN, LRVifBicConfig, MLModel
+from app.domain import TARGET_COLUMN, EvaluationTestSet, LRVifBicConfig, MLModel
 from app.services.helper import save_artifact, save_model
 from app.services.processing import ProcessingService
 from app.settings import Settings
@@ -68,7 +68,9 @@ class TrainingService(BaseModel):
         pipeline = self._create_pipeline()
         pipeline.fit(X_train, y_train)
         save_model(cast("MLModel", pipeline), Settings.EVAL_MODEL_PATH)
-        save_artifact({"X_test": X_test, "y_test": y_test}, Settings.TEST_SET_PATH)
+        save_artifact(
+            EvaluationTestSet(X_test=X_test, y_test=y_test), Settings.TEST_SET_PATH
+        )
 
         return len(X_train), len(X_test)
 

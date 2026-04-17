@@ -1,5 +1,6 @@
 from .base import BaseEntity
 from .constants import TARGET_COLUMN
+from .evaluation_test_set import EvaluationTestSet
 from .exceptions import (
     FeaturesContainNaNError,
     FeaturesEmptyError,
@@ -14,6 +15,7 @@ from .schema_validator import SchemaValidator
 __all__ = [
     "TARGET_COLUMN",
     "BaseEntity",
+    "EvaluationTestSet",
     "FeaturesContainNaNError",
     "FeaturesEmptyError",
     "LRVifBicConfig",
