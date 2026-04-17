@@ -32,7 +32,8 @@ class LRVifBicConfig(BaseModel):
         "lbfgs", "liblinear", "newton-cg", "newton-cholesky", "sag", "saga"
     ] = "lbfgs"
     threshold: float = Field(default=0.467, gt=0.0, lt=1.0)
-    n_bootstrap: int = Field(default=200, gt=0)
+    n_bootstrap_train: int = Field(default=200, gt=0)
+    n_bootstrap_eval: int = Field(default=2000, gt=0)
     random_state: int = Field(default=37, gt=0)
     test_size: float = Field(default=0.2, gt=0.0, lt=1.0)
 

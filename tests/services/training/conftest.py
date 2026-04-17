@@ -12,12 +12,12 @@ from app.settings import Settings
 
 @pytest.fixture
 def fast_lr_config() -> LRVifBicConfig:
-    """LRVifBicConfig with n_bootstrap=2 for fast tests.
+    """LRVifBicConfig with n_bootstrap_train=2 for fast tests.
 
     Returns:
         LRVifBicConfig with reduced bootstrap count.
     """
-    return LRVifBicConfig(n_bootstrap=2)
+    return LRVifBicConfig(n_bootstrap_train=2)
 
 
 @pytest.fixture(autouse=True)

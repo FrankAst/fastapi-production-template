@@ -1,4 +1,4 @@
-from typing import ClassVar, cast
+from typing import cast
 
 import numpy as np
 from pandas import DataFrame, Series
@@ -12,7 +12,7 @@ from sklearn.metrics import (
 )
 from sklearn.pipeline import Pipeline
 
-from app.domain import LRVifBicConfig
+from app.domain import EvaluationTestSet, LRVifBicConfig
 from app.services.helper import load_artifact
 from app.settings import Settings
 
@@ -29,7 +29,6 @@ class EvaluationService(BaseModel):
     """Loads training artifacts and computes classification metrics
     with bootstrap CIs."""
 
-    N_BOOTSTRAP_EVAL: ClassVar[int] = 2000
     lr_config: LRVifBicConfig = Field(default_factory=LRVifBicConfig)
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -68,10 +67,11 @@ class EvaluationService(BaseModel):
 
     @staticmethod
     def _load_test_set() -> tuple[DataFrame, Series]:
-        bundle = load_artifact(Settings.TEST_SET_PATH)
-        if bundle is None:
+        artifact = load_artifact(Settings.TEST_SET_PATH)
+        if artifact is None:
             raise NoEvaluationArtifactsError
-        return cast("DataFrame", bundle["X_test"]), cast("Series", bundle["y_test"])
+        bundle = cast("EvaluationTestSet", artifact)
+        return bundle.X_test, bundle.y_test
 
     def _compute_metrics(
         self,
@@ -113,7 +113,7 @@ class EvaluationService(BaseModel):
         y_arr: np.ndarray,
         y_pred_proba: np.ndarray,
     ) -> tuple[list[float], list[float], list[float], list[float]]:
-        """Stratified resample predictions N_BOOTSTRAP_EVAL times and collect
+        """Stratified resample predictions n_bootstrap_eval times and collect
         per-metric values.
 
         Resamples each class separately with replacement, preserving the original
@@ -136,7 +136,7 @@ class EvaluationService(BaseModel):
         boot_recall: list[float] = []
         boot_f1: list[float] = []
 
-        for _ in range(self.N_BOOTSTRAP_EVAL):
+        for _ in range(self.lr_config.n_bootstrap_eval):
             idx = np.concatenate([
                 rng.choice(pos_idx, size=len(pos_idx), replace=True),
                 rng.choice(neg_idx, size=len(neg_idx), replace=True),
