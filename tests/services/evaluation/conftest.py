@@ -13,12 +13,12 @@ from app.settings import Settings
 
 @pytest.fixture
 def fast_lr_config() -> LRVifBicConfig:
-    """LRVifBicConfig with n_bootstrap=2 for fast training in evaluation tests.
+    """LRVifBicConfig with fast bootstrap counts for training and evaluation.
 
     Returns:
-        LRVifBicConfig with reduced bootstrap count.
+        LRVifBicConfig with reduced bootstrap counts.
     """
-    return LRVifBicConfig(n_bootstrap=2)
+    return LRVifBicConfig(n_bootstrap_train=2, n_bootstrap_eval=10)
 
 
 @pytest.fixture(autouse=True)
@@ -36,12 +36,6 @@ def mock_artifact_paths(tmp_path: Path) -> Generator[None]:
     yield
     for attr, prop in original.items():
         setattr(type(Settings), attr, prop)
-
-
-@pytest.fixture(autouse=True)
-def fast_bootstrap_eval(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Override N_BOOTSTRAP_EVAL to keep evaluation tests fast."""
-    monkeypatch.setattr(EvaluationService, "N_BOOTSTRAP_EVAL", 10)
 
 
 @pytest.fixture
