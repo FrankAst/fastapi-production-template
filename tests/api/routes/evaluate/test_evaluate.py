@@ -7,12 +7,14 @@ from fastapi.testclient import TestClient
 from app.domain.models import LRVifBicConfig
 from app.injections import configure_container
 from app.services.evaluation import (
-    ConfusionMatrixResult,
     EvaluationResult,
     EvaluationService,
+    NoEvaluationArtifactsError,
+)
+from app.services.evaluation.evaluation_result import (
+    ConfusionMatrixResult,
     MetricsResult,
     MetricWithCI,
-    NoEvaluationArtifactsError,
 )
 
 
