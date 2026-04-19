@@ -24,18 +24,17 @@ def test_removes_original_column(valid_training_dataframe: pd.DataFrame) -> None
 
 
 def test_age_maps_to_correct_category(
-    age_with_expected_category: tuple[float | None, str],
+    age_with_expected_category: tuple[pd.DataFrame, str],
     age_categories: list[str],
 ) -> None:
 
-    age, expected_category = age_with_expected_category
-    df = pd.DataFrame({"RIDAGEYR": [age], "feature": [1]})
+    df, expected_category = age_with_expected_category
     result = AgeBinner().transform(df)
 
-    for category in age_categories:
-        expected = 1 if category == expected_category else 0
-        actual = result[category].iloc[0]
-        assert actual == expected
+    actual = result[age_categories].iloc[0].to_dict()
+    expected = {c: int(c == expected_category) for c in age_categories}
+
+    assert actual == expected
 
 
 def test_mutual_exclusivity(
