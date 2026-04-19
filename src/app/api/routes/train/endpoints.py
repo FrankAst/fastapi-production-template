@@ -4,7 +4,6 @@ from dependency_injector.wiring import inject
 from fastapi import APIRouter, File, UploadFile
 
 from app.api.dependencies import TrainingServiceDependency
-from app.domain import LRVifBicConfig
 
 from .responses import RESPONSES
 from .schemas import FileTrainRequest, TrainResponse
@@ -20,11 +19,4 @@ async def train(
 ) -> TrainResponse:
     train_request = await FileTrainRequest.from_upload(file)
     result = training_service.train(train_request)
-
-    return TrainResponse(
-        n_samples=result.n_samples,
-        n_train=result.n_train,
-        n_test=result.n_test,
-        n_bootstrap=result.n_bootstrap,
-        threshold=LRVifBicConfig().threshold,
-    )
+    return TrainResponse.model_validate(result)

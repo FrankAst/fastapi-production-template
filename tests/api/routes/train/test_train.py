@@ -19,7 +19,11 @@ def mock_training_service() -> MagicMock:
     """
     service = MagicMock()
     service.train.return_value = TrainingResult(
-        n_samples=10, n_train=8, n_test=2, n_bootstrap=2
+        n_samples=10,
+        n_train=8,
+        n_test=2,
+        n_bootstrap=2,
+        threshold=LRVifBicConfig().threshold,
     )
     return service
 

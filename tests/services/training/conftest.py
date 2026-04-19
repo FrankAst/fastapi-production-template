@@ -65,7 +65,6 @@ def nhanes_training_dataframe() -> pd.DataFrame:
         "has_diabetes_or_prediabetes",
     ]
     rows = [
-        # age,  waist,  ht,   bp,  chol, fem, drink, dias, sys,   edu, phq, vig,  target
         [45.0, 95.0, 170.0, 1.0, 0.0, 1.0, 2.0, 80.0, 120.0, 4.0, 5.0, 0.0, 0.0],
         [62.0, 110.5, 165.0, 0.0, 1.0, 0.0, 0.0, 90.0, 145.0, 3.0, 12.0, 60.0, 1.0],
         [28.0, 78.0, 180.0, 0.0, 0.0, 1.0, 3.0, 70.0, 110.0, 5.0, 0.0, 150.0, 0.0],

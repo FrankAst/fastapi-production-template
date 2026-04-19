@@ -42,6 +42,7 @@ class TrainingService(BaseModel):
             n_train=n_train,
             n_test=n_test,
             n_bootstrap=self.lr_config.n_bootstrap,
+            threshold=self.lr_config.threshold,
         )
 
     @staticmethod

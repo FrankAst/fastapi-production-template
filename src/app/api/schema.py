@@ -9,4 +9,5 @@ class BaseSchema(BaseModel, ExamplerMixIn):
         alias_generator=to_camel,
         populate_by_name=True,
         arbitrary_types_allowed=True,
+        from_attributes=True,
     )
