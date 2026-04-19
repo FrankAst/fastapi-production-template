@@ -76,13 +76,6 @@ class TrainingService(BaseModel):
         return len(X_train), len(X_test)
 
     def _train_production(self, X: DataFrame, y: Series) -> None:
-        """Fit the production model on 100% of the data and persist artifacts.
-
-        The post-processing schema is inferred here — from the production pipeline
-        output — because this is the only model trained on the full dataset. The
-        schema captures the exact feature distribution the prediction endpoint will
-        validate against at inference time.
-        """
         pipeline = self._create_pipeline()
         pipeline.fit(X, y)
         save_model(cast("MLModel", pipeline), Settings.PRODUCTION_MODEL_PATH)
