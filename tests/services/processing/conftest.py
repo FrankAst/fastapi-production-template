@@ -60,13 +60,21 @@ def _age_test_cases() -> list[Any]:
 
 
 @pytest.fixture(params=_age_test_cases())
-def age_with_expected_category(
-    request: pytest.FixtureRequest,
-) -> tuple[pd.DataFrame, str]:
-    """Parametrized Single-row DataFrame plus the category column expected to be 1."""
-    age, expected_category = cast("tuple[float | None, str]", request.param)
-    df = pd.DataFrame({"RIDAGEYR": [age], "feature": [1]})
-    return df, expected_category
+def _age_case(request: pytest.FixtureRequest) -> tuple[float | None, str]:
+    return cast("tuple[float | None, str]", request.param)
+
+
+@pytest.fixture
+def age_dataframe(_age_case: tuple[float | None, str]) -> pd.DataFrame:
+    """Single-row DataFrame with the parametrized RIDAGEYR value."""
+    age, _ = _age_case
+    return pd.DataFrame({"RIDAGEYR": [age], "feature": [1]})
+
+
+@pytest.fixture
+def expected_age_category(_age_case: tuple[float | None, str]) -> str:
+    """The AgeBinner category column expected to be 1 for the parametrized age."""
+    return _age_case[1]
 
 
 @pytest.fixture

@@ -24,15 +24,15 @@ def test_removes_original_column(valid_training_dataframe: pd.DataFrame) -> None
 
 
 def test_age_maps_to_correct_category(
-    age_with_expected_category: tuple[pd.DataFrame, str],
+    age_dataframe: pd.DataFrame,
+    expected_age_category: str,
     age_categories: list[str],
 ) -> None:
 
-    df, expected_category = age_with_expected_category
-    result = AgeBinner().transform(df)
+    result = AgeBinner().transform(age_dataframe)
 
     actual = result[age_categories].iloc[0].to_dict()
-    expected = {c: int(c == expected_category) for c in age_categories}
+    expected = {c: int(c == expected_age_category) for c in age_categories}
 
     assert actual == expected
 
