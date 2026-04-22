@@ -192,6 +192,7 @@ ignore = [
     "ISC001",
     "ANN401",
     "COM812",
+    "RUF067", # __init__ module should only contain docstrings and re-exports
 ]
 
 [tool.ruff.format]
@@ -219,6 +220,7 @@ fail-on = ["I"]
 fail-under = 10
 ignore = []
 ignore-paths = []
+init-hook = "import sys; sys.path.insert(0, 'src')"
 jobs = 0
 limit-inference-results = 1000
 load-plugins = [
@@ -292,7 +294,7 @@ max-bool-expr = 5
 max-branches = 12
 max-complexity = 10
 max-locals = 15
-max-parents = 7
+max-parents = 8
 max-public-methods = 20
 max-returns = 6
 max-statements = 50

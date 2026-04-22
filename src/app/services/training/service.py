@@ -3,15 +3,16 @@ from pathlib import Path
 from pandas import DataFrame
 from pydantic import BaseModel, ConfigDict, Field
 from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
 
 from app.domain import MLModel, SchemaValidator
 from app.services.helper import load_model, save_model
+from app.services.processing import ProcessingService
 from app.settings import Settings
 
 
 class TrainingService(BaseModel):
+    processing_service: ProcessingService = Field(default_factory=ProcessingService)
     model_path: Path = Field(default=Settings.MODEL_PATH)
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -23,9 +24,17 @@ class TrainingService(BaseModel):
             if model:
                 return model
 
-        return make_pipeline(
-            StandardScaler(), LogisticRegression(), memory="cache_folder"
-        )  # type: ignore[return-value]
+        return Pipeline([
+            ("preprocessing", self.processing_service.pipeline),
+            (
+                "classifier",
+                LogisticRegression(
+                    class_weight="balanced",
+                    penalty=None,
+                    max_iter=1000,
+                ),
+            ),
+        ])  # type: ignore[return-value]
 
     def train(self, df: DataFrame) -> MLModel:
         """

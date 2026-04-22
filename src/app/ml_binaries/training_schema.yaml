@@ -1,38 +1,146 @@
 schema_type: dataframe
 version: 0.20.4
 columns:
-  feature_1:
+  RIDAGEYR:
     title: null
     description: null
-    dtype: float64
+    dtype: int64
     nullable: true
     checks:
-      greater_than_or_equal_to: 23.5
-      less_than_or_equal_to: 35.2
+      greater_than_or_equal_to: 25.0
+      less_than_or_equal_to: 80.0
     unique: false
     coerce: true
     required: true
     regex: false
-  feature_2:
+  BMXWAIST:
     title: null
     description: null
     dtype: float64
     nullable: true
     checks:
-      greater_than_or_equal_to: 37.9
-      less_than_or_equal_to: 46.1
+      greater_than_or_equal_to: 85.0
+      less_than_or_equal_to: 110.0
     unique: false
     coerce: true
     required: true
     regex: false
-  feature_3:
+  BMXHT:
+    title: null
+    description: null
+    dtype: int64
+    nullable: true
+    checks:
+      greater_than_or_equal_to: 0.0
+      less_than_or_equal_to: 175.0
+    unique: false
+    coerce: true
+    required: true
+    regex: false
+  systolic_bp:
     title: null
     description: null
     dtype: float64
     nullable: true
     checks:
-      greater_than_or_equal_to: 11.9
-      less_than_or_equal_to: 17.5
+      greater_than_or_equal_to: 120.0
+      less_than_or_equal_to: 140.0
+    unique: false
+    coerce: true
+    required: true
+    regex: false
+  diastolic_bp:
+    title: null
+    description: null
+    dtype: int64
+    nullable: true
+    checks:
+      greater_than_or_equal_to: 75.0
+      less_than_or_equal_to: 90.0
+    unique: false
+    coerce: true
+    required: true
+    regex: false
+  is_female:
+    title: null
+    description: null
+    dtype: int64
+    nullable: true
+    checks:
+      greater_than_or_equal_to: 0.0
+      less_than_or_equal_to: 1.0
+    unique: false
+    coerce: true
+    required: true
+    regex: false
+  told_high_bp:
+    title: null
+    description: null
+    dtype: float64
+    nullable: true
+    checks:
+      greater_than_or_equal_to: 0.0
+      less_than_or_equal_to: 1.0
+    unique: false
+    coerce: true
+    required: true
+    regex: false
+  told_high_cholesterol:
+    title: null
+    description: null
+    dtype: float64
+    nullable: true
+    checks:
+      greater_than_or_equal_to: 0.0
+      less_than_or_equal_to: 1.0
+    unique: false
+    coerce: true
+    required: true
+    regex: false
+  drinking_frequency:
+    title: null
+    description: null
+    dtype: float64
+    nullable: true
+    checks:
+      greater_than_or_equal_to: 0.0
+      less_than_or_equal_to: 3.0
+    unique: false
+    coerce: true
+    required: true
+    regex: false
+  education_level:
+    title: null
+    description: null
+    dtype: float64
+    nullable: true
+    checks:
+      greater_than_or_equal_to: 2.0
+      less_than_or_equal_to: 5.0
+    unique: false
+    coerce: true
+    required: true
+    regex: false
+  phq9_score:
+    title: null
+    description: null
+    dtype: int64
+    nullable: true
+    checks:
+      greater_than_or_equal_to: 1.0
+      less_than_or_equal_to: 8.0
+    unique: false
+    coerce: true
+    required: true
+    regex: false
+  vigorous_minutes_per_week:
+    title: null
+    description: null
+    dtype: float64
+    nullable: true
+    checks:
+      greater_than_or_equal_to: 0.0
+      less_than_or_equal_to: 120.0
     unique: false
     coerce: true
     required: true
@@ -45,7 +153,7 @@ index:
   nullable: false
   checks:
     greater_than_or_equal_to: 0.0
-    less_than_or_equal_to: 14.0
+    less_than_or_equal_to: 4.0
   name: null
   unique: false
   coerce: false
