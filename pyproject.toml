@@ -129,6 +129,7 @@ omit = [
     "src/app/api/__init__.py",
     "src/app/frontend/*",
     "src/app/settings.py",
+    "**/*.pyx",
 ]
 
 
