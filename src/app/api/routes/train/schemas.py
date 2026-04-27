@@ -27,4 +27,7 @@ class TrainResponse(BaseSchema):
     n_bootstrap: int = Field(
         description="Number of bootstrap resamples in the prediction ensemble"
     )
+    n_shap_background: int = Field(
+        description="Number of rows in the SHAP background sample"
+    )
     threshold: float = Field(description="Decision threshold applied at inference")

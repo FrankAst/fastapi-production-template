@@ -7,4 +7,5 @@ class TrainingResult:
     n_train: int
     n_test: int
     n_bootstrap: int
+    n_shap_background: int
     threshold: float

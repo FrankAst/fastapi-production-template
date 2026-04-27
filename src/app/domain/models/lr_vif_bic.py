@@ -33,6 +33,7 @@ class LRVifBicConfig(BaseModel):
     threshold: float = Field(default=0.467, gt=0.0, lt=1.0)
     n_bootstrap_pred: int = Field(default=200, gt=0)
     n_bootstrap_eval: int = Field(default=1000, gt=0)
+    n_shap_background: int = Field(default=100, gt=0)
     random_state: int = Field(default=37, gt=0)
     test_size: float = Field(default=0.2, gt=0.0, lt=1.0)
 
