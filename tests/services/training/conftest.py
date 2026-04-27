@@ -12,12 +12,12 @@ from app.settings import Settings
 
 @pytest.fixture
 def fast_lr_config() -> LRVifBicConfig:
-    """LRVifBicConfig with n_bootstrap_train=2 for fast tests.
+    """LRVifBicConfig with reduced bootstrap and SHAP background sizes for fast tests.
 
     Returns:
-        LRVifBicConfig with reduced bootstrap count.
+        LRVifBicConfig with reduced counts.
     """
-    return LRVifBicConfig(n_bootstrap_train=2)
+    return LRVifBicConfig(n_bootstrap_train=2, n_shap_background=2)
 
 
 @pytest.fixture(autouse=True)
@@ -28,6 +28,7 @@ def mock_artifact_paths(tmp_path: Path) -> Generator[None]:
         "PRODUCTION_MODEL_PATH": tmp_path / "production_model.joblib",
         "BOOTSTRAP_ENSEMBLE_PATH": tmp_path / "bootstrap_ensemble.joblib",
         "TEST_SET_PATH": tmp_path / "test_set.joblib",
+        "SHAP_BACKGROUND_PATH": tmp_path / "shap_background.joblib",
     }
     original = {attr: getattr(type(Settings), attr) for attr in paths}
     for attr, p in paths.items():

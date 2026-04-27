@@ -18,7 +18,7 @@ def fast_lr_config() -> LRVifBicConfig:
     Returns:
         LRVifBicConfig with reduced bootstrap counts.
     """
-    return LRVifBicConfig(n_bootstrap_train=2, n_bootstrap_eval=10)
+    return LRVifBicConfig(n_bootstrap_train=2, n_bootstrap_eval=10, n_shap_background=2)
 
 
 @pytest.fixture(autouse=True)
@@ -29,6 +29,7 @@ def mock_artifact_paths(tmp_path: Path) -> Generator[None]:
         "PRODUCTION_MODEL_PATH": tmp_path / "production_model.joblib",
         "BOOTSTRAP_ENSEMBLE_PATH": tmp_path / "bootstrap_ensemble.joblib",
         "TEST_SET_PATH": tmp_path / "test_set.joblib",
+        "SHAP_BACKGROUND_PATH": tmp_path / "shap_background.joblib",
     }
     original = {attr: getattr(type(Settings), attr) for attr in paths}
     for attr, p in paths.items():

@@ -23,6 +23,7 @@ def mock_training_service() -> MagicMock:
         n_train=8,
         n_test=2,
         n_bootstrap=2,
+        n_shap_background=2,
         threshold=LRVifBicConfig().threshold,
     )
     return service
@@ -53,4 +54,5 @@ def test_train_endpoint_returns_summary(
     assert body["nTrain"] == known_result.n_train
     assert body["nTest"] == known_result.n_test
     assert body["nBootstrap"] == known_result.n_bootstrap
+    assert body["nShapBackground"] == known_result.n_shap_background
     assert body["threshold"] == config.threshold

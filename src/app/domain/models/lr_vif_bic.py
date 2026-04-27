@@ -19,6 +19,7 @@ class LRVifBicConfig(BaseModel):
     threshold: float = 0.467
     n_bootstrap_train: int = 200
     n_bootstrap_eval: int = 2000
+    n_shap_background: int = 100
     random_state: int = 37
     test_size: float = 0.2
 

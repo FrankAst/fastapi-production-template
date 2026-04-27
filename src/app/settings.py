@@ -38,6 +38,10 @@ class _Settings(BaseSettings):
         return self.MODEL_DIRECTORY / "test_set.joblib"
 
     @property
+    def SHAP_BACKGROUND_PATH(self) -> Path:
+        return self.MODEL_DIRECTORY / "shap_background.joblib"
+
+    @property
     def SOCKET_URL(self) -> str:
         return f"http://{self.HOST}:{{port}}"
 
