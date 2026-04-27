@@ -1,4 +1,5 @@
 from .base import BaseEntity
+from .batch_prediction_output import BatchPredictionOutput
 from .constants import TARGET_COLUMN
 from .evaluation_test_set import EvaluationTestSet
 from .exceptions import (
@@ -11,10 +12,13 @@ from .models import LRVifBicConfig
 from .prediction_input import PredictionInput
 from .prediction_output import PredictionOutput
 from .schema_validator import SchemaValidator
+from .shap_contribution import ShapContribution
+from .shap_explanation import ShapExplanation
 
 __all__ = [
     "TARGET_COLUMN",
     "BaseEntity",
+    "BatchPredictionOutput",
     "EvaluationTestSet",
     "FeaturesContainNaNError",
     "FeaturesEmptyError",
@@ -24,4 +28,6 @@ __all__ = [
     "PredictionInput",
     "PredictionOutput",
     "SchemaValidator",
+    "ShapContribution",
+    "ShapExplanation",
 ]

@@ -2,7 +2,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field
 
-from app.domain import MLModel, PredictionInput, PredictionOutput
+from app.domain import BatchPredictionOutput, MLModel, PredictionInput
 from app.services.helper import load_model
 from app.settings import Settings
 
@@ -16,7 +16,7 @@ class PredictionService(BaseModel):
     def model(self) -> MLModel | None:
         return load_model(self.model_path)
 
-    def predict(self, prediction_input: PredictionInput) -> PredictionOutput:
+    def predict(self, prediction_input: PredictionInput) -> BatchPredictionOutput:
         """
         Make predictions for a single or batch input.
 
@@ -25,7 +25,7 @@ class PredictionService(BaseModel):
             features for prediction.
 
         Returns:
-            PredictionOutput: Contains predictions and count.
+            BatchPredictionOutput: Contains predictions and count.
 
         Raises:
             NoTrainedModelError: If no trained model is found.
@@ -35,6 +35,6 @@ class PredictionService(BaseModel):
 
         prediction_results = self.model.predict(prediction_input.features)
 
-        return PredictionOutput(
+        return BatchPredictionOutput(
             predictions=prediction_results, count=len(prediction_results)
         )
