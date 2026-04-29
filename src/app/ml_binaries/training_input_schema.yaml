@@ -115,7 +115,7 @@ columns:
     dtype: float64
     nullable: true
     checks:
-      greater_than_or_equal_to: 1.0
+      greater_than_or_equal_to: 0.0
       less_than_or_equal_to: 5.0
     unique: false
     coerce: true
