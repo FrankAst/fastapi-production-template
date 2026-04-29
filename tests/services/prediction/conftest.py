@@ -1,0 +1,99 @@
+# pylint: disable=duplicate-code
+from collections.abc import Generator
+from pathlib import Path
+
+import pandas as pd
+import pytest
+
+from app.domain import TARGET_COLUMN, LRVifBicConfig, PredictionInput
+from app.services.prediction import PredictionService
+from app.services.training import TrainingService
+from app.settings import Settings
+
+
+@pytest.fixture
+def fast_lr_config() -> LRVifBicConfig:
+    """LRVifBicConfig with reduced bootstrap and SHAP background sizes for fast tests.
+
+    Returns:
+        LRVifBicConfig with reduced counts.
+    """
+    return LRVifBicConfig(n_bootstrap_train=2, n_shap_background=2)
+
+
+@pytest.fixture(autouse=True)
+def mock_artifact_paths(tmp_path: Path) -> Generator[None]:
+    """Redirect all artifact paths to tmp_path for every prediction test."""
+    paths: dict[str, Path] = {
+        "EVAL_MODEL_PATH": tmp_path / "eval_model.joblib",
+        "PRODUCTION_MODEL_PATH": tmp_path / "production_model.joblib",
+        "BOOTSTRAP_ENSEMBLE_PATH": tmp_path / "bootstrap_ensemble.joblib",
+        "TEST_SET_PATH": tmp_path / "test_set.joblib",
+        "SHAP_BACKGROUND_PATH": tmp_path / "shap_background.joblib",
+    }
+    original = {attr: getattr(type(Settings), attr) for attr in paths}
+    for attr, p in paths.items():
+        setattr(type(Settings), attr, property(lambda _, val=p: val))  # type: ignore[misc]
+    yield
+    for attr, prop in original.items():
+        setattr(type(Settings), attr, prop)
+
+
+@pytest.fixture
+def nhanes_training_dataframe() -> pd.DataFrame:
+    """13-column NHANES DataFrame with 10 rows (5 per class) for stratified split.
+
+    Returns:
+        DataFrame with 10 rows and the expected NHANES columns.
+    """
+    columns = [
+        "RIDAGEYR",
+        "BMXWAIST",
+        "BMXHT",
+        "told_high_bp",
+        "told_high_cholesterol",
+        "is_female",
+        "drinking_frequency",
+        "diastolic_bp",
+        "systolic_bp",
+        "education_level",
+        "phq9_score",
+        "vigorous_minutes_per_week",
+        "has_diabetes_or_prediabetes",
+    ]
+    rows = [
+        [45.0, 95.0, 170.0, 1.0, 0.0, 1.0, 2.0, 80.0, 120.0, 4.0, 5.0, 0.0, 0.0],
+        [62.0, 110.5, 165.0, 0.0, 1.0, 0.0, 0.0, 90.0, 145.0, 3.0, 12.0, 60.0, 1.0],
+        [28.0, 78.0, 180.0, 0.0, 0.0, 1.0, 3.0, 70.0, 110.0, 5.0, 0.0, 150.0, 0.0],
+        [55.0, 102.0, 168.0, 1.0, 1.0, 0.0, 1.0, 85.0, 135.0, 2.0, 8.0, 30.0, 1.0],
+        [71.0, 88.0, 172.0, 0.0, 0.0, 1.0, 0.0, 75.0, 125.0, 4.0, 3.0, 0.0, 0.0],
+        [33.0, 75.0, 175.0, 0.0, 0.0, 1.0, 4.0, 72.0, 115.0, 5.0, 0.0, 180.0, 0.0],
+        [48.0, 99.0, 163.0, 1.0, 1.0, 0.0, 2.0, 88.0, 140.0, 3.0, 10.0, 45.0, 1.0],
+        [66.0, 115.0, 169.0, 0.0, 0.0, 1.0, 0.0, 78.0, 118.0, 4.0, 2.0, 0.0, 0.0],
+        [39.0, 84.0, 178.0, 0.0, 1.0, 0.0, 3.0, 68.0, 108.0, 5.0, 1.0, 120.0, 1.0],
+        [58.0, 107.0, 166.0, 1.0, 0.0, 1.0, 1.0, 92.0, 138.0, 2.0, 7.0, 20.0, 1.0],
+    ]
+    return pd.DataFrame(rows, columns=columns)
+
+
+@pytest.fixture
+def trained_artifacts(
+    fast_lr_config: LRVifBicConfig,
+    nhanes_training_dataframe: pd.DataFrame,
+) -> None:
+    """Train all artifacts on disk so PredictionService can load them."""
+    TrainingService(lr_config=fast_lr_config).train(nhanes_training_dataframe)
+
+
+@pytest.fixture
+def prediction_service(
+    fast_lr_config: LRVifBicConfig,
+    trained_artifacts: None,  # noqa: ARG001  # pylint: disable=unused-argument
+) -> PredictionService:
+    return PredictionService(lr_config=fast_lr_config)
+
+
+@pytest.fixture
+def known_input_row(nhanes_training_dataframe: pd.DataFrame) -> PredictionInput:
+    features = nhanes_training_dataframe.drop(columns=[TARGET_COLUMN]).iloc[[0]]
+    return PredictionInput(features=features)
