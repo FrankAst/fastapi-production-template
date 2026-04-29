@@ -148,3 +148,23 @@ def test_single_prediction_rejects_out_of_domain_value(
         response = client.post("/prediction/single", json=realistic_payload)
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+def test_single_prediction_rejects_clinically_inconsistent_payload(
+    client: TestClient,
+    realistic_payload: dict[str, object],
+) -> None:
+    inconsistent_payload = {
+        **realistic_payload,
+        "systolicBp": 70.0,
+        "diastolicBp": 90.0,
+    }
+
+    response = client.post("/prediction/single", json=inconsistent_payload)
+
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    body = response.json()
+    assert body["error"] == "Clinical consistency validation failed"
+    assert body["failure_cases"] == [
+        {"column": "systolic_bp", "check": "greater_than(diastolic_bp)", "index": 0}
+    ]

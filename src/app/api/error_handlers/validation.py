@@ -6,6 +6,8 @@ from fastapi import Request, status
 from fastapi.responses import JSONResponse
 from pandera.errors import SchemaErrors
 
+from app.domain import ClinicalConsistencyError
+
 
 def schema_validation_handler(
     _: Request,
@@ -30,5 +32,25 @@ def schema_validation_handler(
             "failure_cases": exc.failure_cases.to_dict("records")
             if hasattr(exc, "failure_cases")
             else None,
+        },
+    )
+
+
+def clinical_consistency_handler(
+    _: Request,
+    exc: ClinicalConsistencyError,
+) -> JSONResponse:
+    """
+    Handle clinical cross-field validation errors.
+
+    Returns:
+        JSONResponse: 422 response with offending row indices.
+    """
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "error": "Clinical consistency validation failed",
+            "details": str(exc),
+            "failure_cases": exc.failure_cases,
         },
     )

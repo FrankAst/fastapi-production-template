@@ -5,7 +5,7 @@ from collections.abc import Callable
 from fastapi import Request, Response
 from pandera.errors import SchemaErrors
 
-from app.domain import NoTrainingSchemaError
+from app.domain import ClinicalConsistencyError, NoTrainingSchemaError
 from app.services import ArtifactPersistError
 from app.services.evaluation import NoEvaluationArtifactsError
 from app.services.prediction import (
@@ -24,12 +24,13 @@ from .domain import (
 from .evaluation import no_evaluation_artifacts_handler
 from .persistence import artifact_persist_handler
 from .training import dimensionality_mismatch_handler
-from .validation import schema_validation_handler
+from .validation import clinical_consistency_handler, schema_validation_handler
 
 ExceptionHandler = Callable[[Request, Exception], Response]
 
 EXCEPTION_HANDLERS: dict[type[Exception], ExceptionHandler] = {
     ArtifactPersistError: artifact_persist_handler,  # type: ignore[dict-item]
+    ClinicalConsistencyError: clinical_consistency_handler,  # type: ignore[dict-item]
     DimensionalityMismatchError: dimensionality_mismatch_handler,  # type: ignore[dict-item]
     NoBootstrapEnsembleError: no_bootstrap_ensemble_handler,  # type: ignore[dict-item]
     NoEvaluationArtifactsError: no_evaluation_artifacts_handler,  # type: ignore[dict-item]
