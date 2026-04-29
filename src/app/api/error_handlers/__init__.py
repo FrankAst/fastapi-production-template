@@ -6,11 +6,20 @@ from fastapi import Request, Response
 from pandera.errors import SchemaErrors
 
 from app.domain import NoTrainingSchemaError
-from app.services import NoTrainedModelError
 from app.services.evaluation import NoEvaluationArtifactsError
+from app.services.prediction import (
+    NoBootstrapEnsembleError,
+    NoShapBackgroundError,
+    NoTrainedModelError,
+)
 from app.services.training import DimensionalityMismatchError
 
-from .domain import no_trained_model_handler, no_training_schema_handler
+from .domain import (
+    no_bootstrap_ensemble_handler,
+    no_shap_background_handler,
+    no_trained_model_handler,
+    no_training_schema_handler,
+)
 from .evaluation import no_evaluation_artifacts_handler
 from .training import dimensionality_mismatch_handler
 from .validation import schema_validation_handler
@@ -19,7 +28,9 @@ ExceptionHandler = Callable[[Request, Exception], Response]
 
 EXCEPTION_HANDLERS: dict[type[Exception], ExceptionHandler] = {
     DimensionalityMismatchError: dimensionality_mismatch_handler,  # type: ignore[dict-item]
+    NoBootstrapEnsembleError: no_bootstrap_ensemble_handler,  # type: ignore[dict-item]
     NoEvaluationArtifactsError: no_evaluation_artifacts_handler,  # type: ignore[dict-item]
+    NoShapBackgroundError: no_shap_background_handler,  # type: ignore[dict-item]
     NoTrainedModelError: no_trained_model_handler,  # type: ignore[dict-item]
     NoTrainingSchemaError: no_training_schema_handler,  # type: ignore[dict-item]
     SchemaErrors: schema_validation_handler,

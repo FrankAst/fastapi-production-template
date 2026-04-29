@@ -10,9 +10,8 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
 )
-from sklearn.pipeline import Pipeline
 
-from app.domain import EvaluationTestSet, LRVifBicConfig
+from app.domain import EvaluationTestSet, LRVifBicConfig, MLModel
 from app.services.helper import load_artifact
 from app.settings import Settings
 
@@ -59,11 +58,11 @@ class EvaluationService(BaseModel):
         )
 
     @staticmethod
-    def _load_eval_model() -> Pipeline:
+    def _load_eval_model() -> MLModel:
         artifact = load_artifact(Settings.EVAL_MODEL_PATH)
         if artifact is None:
             raise NoEvaluationArtifactsError
-        return cast("Pipeline", artifact)
+        return cast("MLModel", artifact)
 
     @staticmethod
     def _load_test_set() -> tuple[DataFrame, Series]:

@@ -1,10 +1,8 @@
-import math
 from collections.abc import Sequence
-from typing import Self
 
 from fastapi import UploadFile
 from pandas import DataFrame
-from pydantic import ConfigDict, Field, model_validator
+from pydantic import ConfigDict, Field
 
 from app.api.schema import BaseSchema
 from app.domain import SchemaValidator
@@ -12,17 +10,30 @@ from app.utils import process_csv_file
 
 
 class SinglePredictionRequest(BaseSchema):
-    features: Sequence[float] = Field(
-        description="Array of features for prediction", min_length=1
+    RIDAGEYR: float = Field(alias="RIDAGEYR", description="Age in years")
+    BMXWAIST: float = Field(alias="BMXWAIST", description="Waist circumference in cm")
+    BMXHT: float = Field(alias="BMXHT", description="Standing height in cm")
+    told_high_bp: bool = Field(description="Ever told had high blood pressure")
+    told_high_cholesterol: bool = Field(description="Ever told had high cholesterol")
+    is_female: bool = Field(description="Sex flag (true if female)")
+    drinking_frequency: int = Field(description="Drinking frequency category 0-4")
+    diastolic_bp: float = Field(description="Diastolic blood pressure")
+    systolic_bp: float = Field(description="Systolic blood pressure")
+    education_level: int = Field(description="Education level category 1-5")
+    phq9_score: int = Field(description="PHQ-9 depression score 0-27")
+    vigorous_minutes_per_week: int = Field(
+        description="Vigorous activity minutes per week"
     )
 
-    @model_validator(mode="after")
-    def validate_features(self) -> Self:
-        # Check for NaN values
-        if any(math.isnan(feature) for feature in self.features):
-            msg = "Features list must not contain NaN values"
-            raise ValueError(msg)
-        return self
+    def to_validated_dataframe(self) -> DataFrame:
+        """Build a single-row DataFrame validated against the Pandera schema.
+
+        Returns:
+            DataFrame: Single-row, schema-validated feature matrix ready for
+            ``PredictionService.predict``.
+        """
+        df = DataFrame([self.model_dump(by_alias=False)])
+        return SchemaValidator.validate_dataframe(df)
 
 
 class BatchPredictionRequest(BaseSchema):
@@ -42,15 +53,40 @@ class BatchPredictionRequest(BaseSchema):
         Returns:
             DataFrame: Validated and processed feature data from the uploaded file.
         """
-        # Parse the uploaded CSV file
         df = await process_csv_file(file)
 
-        # Validate against training schema (raw data structure)
         return SchemaValidator.validate_dataframe(df)
 
 
+class ShapContributionSchema(BaseSchema):
+    feature: str = Field(
+        description="Feature name from the post-processed feature space"
+    )
+    shap_value: float = Field(description="Log-odds contribution of the feature")
+
+
+class ShapExplanationSchema(BaseSchema):
+    base_value: float = Field(description="Explainer expected value in log-odds space")
+    contributions: tuple[ShapContributionSchema, ...] = Field(
+        description="Per-feature contributions, sorted by abs(shap_value) descending"
+    )
+    final_value: float = Field(
+        description="base_value + sum(shap_value); equals the model's log-odds output"
+    )
+
+
 class SinglePredictionResponse(BaseSchema):
-    prediction: float = Field(description="Single prediction result")
+    probability: float = Field(
+        description="Predicted probability of the positive class"
+    )
+    ci_lower: float = Field(description="Lower bound of the 95% bootstrap CI")
+    ci_upper: float = Field(description="Upper bound of the 95% bootstrap CI")
+    is_positive: bool = Field(
+        description="True when probability exceeds the screening threshold"
+    )
+    shap: ShapExplanationSchema = Field(
+        description="SHAP explanation of the prediction"
+    )
 
 
 class BatchPredictionResponse(BaseSchema):

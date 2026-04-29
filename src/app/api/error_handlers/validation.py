@@ -2,7 +2,7 @@
 
 import json
 
-from fastapi import Request
+from fastapi import Request, status
 from fastapi.responses import JSONResponse
 from pandera.errors import SchemaErrors
 
@@ -17,15 +17,13 @@ def schema_validation_handler(
     Returns:
         JSONResponse: 422 response with validation error details.
     """
-    # Try to parse the error message as JSON for better readability
     try:
         error_details = json.loads(str(exc))
     except json.JSONDecodeError:
-        # If not valid JSON, use the string as-is
         error_details = str(exc)
 
     return JSONResponse(
-        status_code=422,
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
             "error": "Data validation failed",
             "details": error_details,
