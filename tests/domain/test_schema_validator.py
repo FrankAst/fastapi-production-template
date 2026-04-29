@@ -7,8 +7,14 @@ import pandas as pd
 import pytest
 from pandera.errors import SchemaError, SchemaErrors
 
-from app.domain.constants import TARGET_COLUMN
-from app.domain.exceptions import NoTrainingSchemaError
+from app.domain.constants import (
+    DIASTOLIC_BP_COLUMN,
+    HEIGHT_COLUMN,
+    SYSTOLIC_BP_COLUMN,
+    TARGET_COLUMN,
+    WAIST_COLUMN,
+)
+from app.domain.exceptions import ClinicalConsistencyError, NoTrainingSchemaError
 from app.domain.schema_validator import SchemaValidator
 
 
@@ -109,3 +115,98 @@ def test_validate_training_input_no_schema_file(
     SchemaValidator.get_training_input_schema_path().unlink(missing_ok=True)
     with pytest.raises(NoTrainingSchemaError):
         SchemaValidator.validate_training_input(nhanes_training_dataframe)
+
+
+def test_validate_dataframe_passes_with_consistent_clinical_values(
+    nhanes_training_dataframe: pd.DataFrame,
+) -> None:
+    df = nhanes_training_dataframe.drop(columns=[TARGET_COLUMN])
+    result = SchemaValidator.validate_dataframe(df)
+    assert isinstance(result, pd.DataFrame)
+
+
+@pytest.mark.parametrize(
+    ("systolic", "diastolic"),
+    [
+        pytest.param(75.0, 80.0, id="systolic_below_diastolic"),
+        pytest.param(80.0, 80.0, id="systolic_equal_to_diastolic"),
+    ],
+)
+def test_validate_dataframe_rejects_invalid_blood_pressure(
+    nhanes_training_dataframe: pd.DataFrame,
+    systolic: float,
+    diastolic: float,
+) -> None:
+    df = nhanes_training_dataframe.drop(columns=[TARGET_COLUMN]).assign(
+        systolic_bp=systolic,
+        diastolic_bp=diastolic,
+    )
+    with pytest.raises(ClinicalConsistencyError):
+        SchemaValidator.validate_dataframe(df)
+
+
+@pytest.mark.parametrize(
+    ("waist", "height"),
+    [
+        pytest.param(180.0, 170.0, id="waist_above_height"),
+        pytest.param(170.0, 170.0, id="waist_equal_to_height"),
+    ],
+)
+def test_validate_dataframe_rejects_invalid_body_measurements(
+    nhanes_training_dataframe: pd.DataFrame,
+    waist: float,
+    height: float,
+) -> None:
+    df = nhanes_training_dataframe.drop(columns=[TARGET_COLUMN]).assign(
+        BMXWAIST=waist,
+        BMXHT=height,
+    )
+    with pytest.raises(ClinicalConsistencyError):
+        SchemaValidator.validate_dataframe(df)
+
+
+@pytest.mark.parametrize(
+    "nan_assignment",
+    [
+        pytest.param({"systolic_bp": math.nan}, id="systolic_nan"),
+        pytest.param({"diastolic_bp": math.nan}, id="diastolic_nan"),
+        pytest.param({"BMXWAIST": math.nan}, id="waist_nan"),
+        pytest.param({"BMXHT": math.nan}, id="height_nan"),
+    ],
+)
+def test_validate_dataframe_passes_when_compared_value_is_nan(
+    nhanes_training_dataframe: pd.DataFrame,
+    nan_assignment: dict[str, float],
+) -> None:
+    df = nhanes_training_dataframe.drop(columns=[TARGET_COLUMN]).assign(
+        **nan_assignment
+    )
+    result = SchemaValidator.validate_dataframe(df)
+    assert isinstance(result, pd.DataFrame)
+
+
+def test_clinical_failure_cases_records_correct_indices(
+    nhanes_training_dataframe: pd.DataFrame,
+) -> None:
+    df = nhanes_training_dataframe.drop(columns=[TARGET_COLUMN]).assign(
+        systolic_bp=[120.0, 70.0, 110.0],
+        diastolic_bp=[80.0, 90.0, 70.0],
+        BMXWAIST=[95.0, 110.5, 200.0],
+        BMXHT=[170.0, 165.0, 180.0],
+    )
+
+    with pytest.raises(ClinicalConsistencyError) as captured:
+        SchemaValidator.validate_dataframe(df)
+
+    assert captured.value.failure_cases == [
+        {
+            "column": SYSTOLIC_BP_COLUMN,
+            "check": f"greater_than({DIASTOLIC_BP_COLUMN})",
+            "index": 1,
+        },
+        {
+            "column": WAIST_COLUMN,
+            "check": f"less_than({HEIGHT_COLUMN})",
+            "index": 2,
+        },
+    ]

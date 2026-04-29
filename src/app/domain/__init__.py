@@ -3,6 +3,7 @@ from .batch_prediction_output import BatchPredictionOutput
 from .constants import TARGET_COLUMN
 from .evaluation_test_set import EvaluationTestSet
 from .exceptions import (
+    ClinicalConsistencyError,
     FeaturesContainNaNError,
     FeaturesEmptyError,
     NoTrainingSchemaError,
@@ -19,6 +20,7 @@ __all__ = [
     "TARGET_COLUMN",
     "BaseEntity",
     "BatchPredictionOutput",
+    "ClinicalConsistencyError",
     "EvaluationTestSet",
     "FeaturesContainNaNError",
     "FeaturesEmptyError",
