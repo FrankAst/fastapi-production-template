@@ -59,7 +59,7 @@ class BatchPredictionRequest(BaseSchema):
         Returns:
             DataFrame: Validated and processed feature data from the uploaded file.
         """
-        df = await process_csv_file(file)
+        df = await process_csv_file(file, require_target=False)
 
         return SchemaValidator.validate_dataframe(df)
 

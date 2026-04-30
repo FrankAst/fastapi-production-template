@@ -86,6 +86,21 @@ async def test_process_csv_file_insufficient_columns(
 
 
 @pytest.mark.anyio
+async def test_process_csv_file_skips_target_validation_when_not_required(
+    make_upload_file: UploadFileFactory,
+) -> None:
+    mock_file = make_upload_file(
+        filename="features_only.csv",
+        content=b"feature_a,feature_b\n1,2\n3,4",
+    )
+
+    result = await process_csv_file(mock_file, require_target=False)
+
+    assert isinstance(result, pd.DataFrame)
+    assert list(result.columns) == ["feature_a", "feature_b"]
+
+
+@pytest.mark.anyio
 async def test_process_csv_file_rejects_headers_only(
     make_upload_file: UploadFileFactory,
 ) -> None:

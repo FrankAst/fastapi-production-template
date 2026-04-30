@@ -159,13 +159,18 @@ def _validate_non_empty(df: DataFrame) -> None:
         )
 
 
-async def process_csv_file(file: UploadFile) -> DataFrame:
+async def process_csv_file(
+    file: UploadFile, *, require_target: bool = True
+) -> DataFrame:
     """
     Complete CSV processing pipeline: validate filename, read content, parse
-    to DataFrame, and validate target column.
+    to DataFrame, and optionally validate the target column.
 
     Args:
         file: The uploaded CSV file to process.
+        require_target: When True (default), enforce that the target column is
+            present and free of NaN — required for /train. Set to False for
+            inference paths like /batch where labels are not provided.
 
     Returns:
         DataFrame: The processed and validated CSV data as a pandas DataFrame.
@@ -175,6 +180,7 @@ async def process_csv_file(file: UploadFile) -> DataFrame:
     df = _parse_csv_to_dataframe(csv_content)
     _validate_number_of_columns(df)
     _validate_non_empty(df)
-    _validate_target_column(df)
+    if require_target:
+        _validate_target_column(df)
 
     return df
