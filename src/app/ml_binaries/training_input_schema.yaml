@@ -4,11 +4,11 @@ columns:
   RIDAGEYR:
     title: null
     description: null
-    dtype: float64
+    dtype: int64
     nullable: false
     checks:
-      greater_than_or_equal_to: 18.0
-      less_than_or_equal_to: 120.0
+      greater_than_or_equal_to: 18
+      less_than_or_equal_to: 120
     unique: false
     coerce: true
     required: true

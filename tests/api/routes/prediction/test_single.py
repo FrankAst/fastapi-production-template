@@ -24,7 +24,7 @@ _PATCH_TARGET = (
 @pytest.fixture
 def realistic_payload() -> dict[str, object]:
     return {
-        "RIDAGEYR": 45.0,
+        "RIDAGEYR": 45,
         "BMXWAIST": 95.0,
         "BMXHT": 170.0,
         "toldHighBp": True,

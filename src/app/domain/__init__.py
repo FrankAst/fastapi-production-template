@@ -1,6 +1,7 @@
 from .base import BaseEntity
 from .batch_prediction_output import BatchPredictionOutput
 from .constants import TARGET_COLUMN
+from .enums import DrinkingFrequency, EducationLevel
 from .evaluation_test_set import EvaluationTestSet
 from .exceptions import (
     ClinicalConsistencyError,
@@ -21,6 +22,8 @@ __all__ = [
     "BaseEntity",
     "BatchPredictionOutput",
     "ClinicalConsistencyError",
+    "DrinkingFrequency",
+    "EducationLevel",
     "EvaluationTestSet",
     "FeaturesContainNaNError",
     "FeaturesEmptyError",

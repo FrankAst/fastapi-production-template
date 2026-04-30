@@ -5,12 +5,12 @@ from pandas import DataFrame
 from pydantic import ConfigDict, Field
 
 from app.api.schema import BaseSchema
-from app.domain import SchemaValidator
+from app.domain import DrinkingFrequency, EducationLevel, SchemaValidator
 from app.utils import process_csv_file
 
 
 class SinglePredictionRequest(BaseSchema):
-    RIDAGEYR: float = Field(alias="RIDAGEYR", ge=18, le=120, description="Age in years")
+    RIDAGEYR: int = Field(alias="RIDAGEYR", ge=18, le=120, description="Age in years")
     BMXWAIST: float = Field(
         alias="BMXWAIST", ge=30, le=200, description="Waist circumference in cm"
     )
@@ -20,12 +20,12 @@ class SinglePredictionRequest(BaseSchema):
     told_high_bp: bool = Field(description="Ever told had high blood pressure")
     told_high_cholesterol: bool = Field(description="Ever told had high cholesterol")
     is_female: bool = Field(description="Sex flag (true if female)")
-    drinking_frequency: int = Field(
-        ge=0, le=4, description="Drinking frequency category 0-4"
+    drinking_frequency: DrinkingFrequency = Field(
+        description="Drinking frequency category"
     )
     diastolic_bp: float = Field(ge=20, le=160, description="Diastolic blood pressure")
     systolic_bp: float = Field(ge=50, le=260, description="Systolic blood pressure")
-    education_level: int = Field(ge=0, le=5, description="Education level category 0-5")
+    education_level: EducationLevel = Field(description="Education level category")
     phq9_score: int = Field(ge=0, le=27, description="PHQ-9 depression score 0-27")
     vigorous_minutes_per_week: int = Field(
         ge=0, le=2520, description="Vigorous activity minutes per week"
