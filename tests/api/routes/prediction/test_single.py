@@ -150,6 +150,49 @@ def test_single_prediction_rejects_out_of_domain_value(
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
+@pytest.mark.parametrize(
+    "nullable_field",
+    [
+        "BMXWAIST",
+        "BMXHT",
+        "toldHighBp",
+        "toldHighCholesterol",
+        "drinkingFrequency",
+        "diastolicBp",
+        "systolicBp",
+        "phq9Score",
+        "vigorousMinutesPerWeek",
+    ],
+)
+def test_single_prediction_accepts_null_for_nullable_fields(
+    client: TestClient,
+    realistic_payload: dict[str, object],
+    mock_prediction_service: MagicMock,
+    nullable_field: str,
+) -> None:
+    payload_with_null = {**realistic_payload, nullable_field: None}
+    container = configure_container()
+
+    with (
+        patch(_PATCH_TARGET, return_value=DataFrame([payload_with_null])),
+        container.prediction_service.override(mock_prediction_service),
+    ):
+        response = client.post("/prediction/single", json=payload_with_null)
+
+    assert response.status_code == status.HTTP_200_OK
+
+
+def test_single_prediction_rejects_null_education_level(
+    client: TestClient,
+    realistic_payload: dict[str, object],
+) -> None:
+    payload_with_null_education = {**realistic_payload, "educationLevel": None}
+
+    response = client.post("/prediction/single", json=payload_with_null_education)
+
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
 def test_single_prediction_rejects_clinically_inconsistent_payload(
     client: TestClient,
     realistic_payload: dict[str, object],

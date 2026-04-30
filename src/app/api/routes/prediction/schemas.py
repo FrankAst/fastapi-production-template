@@ -11,24 +11,45 @@ from app.utils import process_csv_file
 
 class SinglePredictionRequest(BaseSchema):
     RIDAGEYR: int = Field(alias="RIDAGEYR", ge=18, le=120, description="Age in years")
-    BMXWAIST: float = Field(
-        alias="BMXWAIST", ge=30, le=200, description="Waist circumference in cm"
+    BMXWAIST: float | None = Field(
+        default=None,
+        alias="BMXWAIST",
+        ge=30,
+        le=200,
+        description="Waist circumference in cm",
     )
-    BMXHT: float = Field(
-        alias="BMXHT", ge=60, le=210, description="Standing height in cm"
+    BMXHT: float | None = Field(
+        default=None,
+        alias="BMXHT",
+        ge=60,
+        le=210,
+        description="Standing height in cm",
     )
-    told_high_bp: bool = Field(description="Ever told had high blood pressure")
-    told_high_cholesterol: bool = Field(description="Ever told had high cholesterol")
+    told_high_bp: bool | None = Field(
+        default=None, description="Ever told had high blood pressure"
+    )
+    told_high_cholesterol: bool | None = Field(
+        default=None, description="Ever told had high cholesterol"
+    )
     is_female: bool = Field(description="Sex flag (true if female)")
-    drinking_frequency: DrinkingFrequency = Field(
-        description="Drinking frequency category"
+    drinking_frequency: DrinkingFrequency | None = Field(
+        default=None, description="Drinking frequency category"
     )
-    diastolic_bp: float = Field(ge=20, le=160, description="Diastolic blood pressure")
-    systolic_bp: float = Field(ge=50, le=260, description="Systolic blood pressure")
+    diastolic_bp: float | None = Field(
+        default=None, ge=20, le=160, description="Diastolic blood pressure"
+    )
+    systolic_bp: float | None = Field(
+        default=None, ge=50, le=260, description="Systolic blood pressure"
+    )
     education_level: EducationLevel = Field(description="Education level category")
-    phq9_score: int = Field(ge=0, le=27, description="PHQ-9 depression score 0-27")
-    vigorous_minutes_per_week: int = Field(
-        ge=0, le=2520, description="Vigorous activity minutes per week"
+    phq9_score: int | None = Field(
+        default=None, ge=0, le=27, description="PHQ-9 depression score 0-27"
+    )
+    vigorous_minutes_per_week: int | None = Field(
+        default=None,
+        ge=0,
+        le=2520,
+        description="Vigorous activity minutes per week",
     )
 
     def to_validated_dataframe(self) -> DataFrame:
