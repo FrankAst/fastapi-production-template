@@ -2,6 +2,7 @@ import itertools
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import pytest
 
 from app.domain import BatchPredictionOutput, LRVifBicConfig, PredictionInput
@@ -70,6 +71,76 @@ def test_contributions_are_a_tuple(
     output = prediction_service.predict(known_input_row)
 
     assert isinstance(output.shap.contributions, tuple)
+
+
+def test_contribution_features_match_selected_features(
+    prediction_service: PredictionService,
+    known_input_row: PredictionInput,
+) -> None:
+    output = prediction_service.predict(known_input_row)
+
+    feature_names = {c.feature for c in output.shap.contributions}
+
+    assert feature_names == set(SELECTED_FEATURES)
+
+
+@pytest.mark.parametrize(
+    ("raw_column", "perturbed_value", "expected_feature"),
+    [
+        pytest.param("told_high_bp", 1.0, "told_high_bp", id="told_high_bp"),
+        pytest.param(
+            "told_high_cholesterol",
+            1.0,
+            "told_high_cholesterol",
+            id="told_high_cholesterol",
+        ),
+        pytest.param("is_female", 1.0, "is_female", id="is_female"),
+        pytest.param(
+            "drinking_frequency", 4.0, "drinking_frequency", id="drinking_frequency"
+        ),
+        pytest.param("diastolic_bp", 130.0, "diastolic_bp", id="diastolic_bp"),
+        pytest.param("systolic_bp", 200.0, "systolic_bp", id="systolic_bp"),
+        pytest.param("education_level", 5.0, "education_level", id="education_level"),
+        pytest.param("phq9_score", 27.0, "phq9_score", id="phq9_score"),
+        pytest.param(
+            "vigorous_minutes_per_week",
+            1500.0,
+            "vigorous_minutes_per_week",
+            id="vigorous_minutes_per_week",
+        ),
+        pytest.param("BMXWAIST", 130.0, "waist_to_height_ratio", id="waist_ratio"),
+    ],
+)
+def test_perturbing_one_feature_dominates_its_shap_change(
+    prediction_service: PredictionService,
+    baseline_patient_features: pd.DataFrame,
+    raw_column: str,
+    perturbed_value: float,
+    expected_feature: str,
+) -> None:
+    baseline_output = prediction_service.predict(
+        PredictionInput(features=baseline_patient_features)
+    )
+    perturbed_features = baseline_patient_features.copy()
+    perturbed_features[raw_column] = perturbed_value
+    perturbed_output = prediction_service.predict(
+        PredictionInput(features=perturbed_features)
+    )
+
+    baseline_by_name = {
+        c.feature: c.shap_value for c in baseline_output.shap.contributions
+    }
+    perturbed_by_name = {
+        c.feature: c.shap_value for c in perturbed_output.shap.contributions
+    }
+    deltas = {
+        name: abs(perturbed_by_name[name] - baseline_by_name[name])
+        for name in baseline_by_name
+    }
+
+    dominant_feature = max(deltas, key=lambda name: deltas[name])
+
+    assert dominant_feature == expected_feature
 
 
 def test_batch_predict_returns_batch_prediction_output(
