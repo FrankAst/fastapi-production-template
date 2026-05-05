@@ -1,0 +1,88 @@
+@import "@fontsource/nunito/400.css";
+@import "@fontsource/nunito/500.css";
+@import "@fontsource/nunito/600.css";
+@import "@fontsource/nunito/700.css";
+@import "@fontsource/nunito/800.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Design tokens — sourced from docs/claude_code_guides/Frontend PR/design-guidelines.md.
+ * Tailwind reads these via tailwind.config.ts and exposes them as utilities
+ * (e.g. `bg-bg`, `text-text-muted`, `rounded-card`, `shadow-card`).
+ * Hand-typed hex codes in components are forbidden — always reference these tokens.
+ */
+:root {
+  /* Surfaces */
+  --color-bg: #f4f6f4;
+  --color-surface: #ffffff;
+  --color-surface-muted: #fafbfa;
+  --color-border: #e3e7e5;
+  --color-border-strong: #c9d0cc;
+
+  /* Brand — pine teal */
+  --color-primary: #2f7a6f;
+  --color-primary-hover: #266459;
+  --color-primary-tint: #e6f0ee;
+  --color-primary-fg: #ffffff;
+
+  /* Semantic — refer / risk-up */
+  --color-refer: #e68a2e;
+  --color-refer-bg: #fbe8ce;
+  --color-refer-halo: #fef5e5;
+  --color-refer-bar: #e68a2e;
+
+  /* Semantic — no-referral / risk-down */
+  --color-ok: #5ba577;
+  --color-ok-bg: #d6ebdb;
+  --color-ok-halo: #ecf6ee;
+  --color-ok-bar: #2f7a6f;
+
+  /* Semantic — error */
+  --color-error: #d85a5a;
+  --color-error-bg: #fbeaea;
+
+  /* Text */
+  --color-text: #1f2a26;
+  --color-text-muted: #5c6964;
+  --color-text-subtle: #8a938f;
+
+  /* Typography */
+  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-numeric: "Nunito", ui-sans-serif, system-ui, sans-serif;
+
+  /* Radii */
+  --radius-card: 12px;
+  --radius-input: 8px;
+  --radius-pill: 9999px;
+
+  /* Shadows */
+  --shadow-card: 0 1px 2px rgba(31, 42, 38, 0.04), 0 2px 8px rgba(31, 42, 38, 0.04);
+  --shadow-card-hover: 0 1px 3px rgba(31, 42, 38, 0.06), 0 4px 12px rgba(31, 42, 38, 0.06);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}

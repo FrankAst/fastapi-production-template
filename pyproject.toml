@@ -60,6 +60,7 @@ dev = [
 serve = "uv run python -m app"
 serve-api = "uv run python -m app.api"
 serve-ui = "uv run python -m app.frontend"
+serve-web = { cmd = "npm run dev", cwd = "web" }
 test = "uv run pytest"
 format = "uv run pre-commit run --all-files --verbose"
 check-coverage = "uv run coverage report --fail-under=80"
