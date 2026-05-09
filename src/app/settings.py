@@ -18,10 +18,6 @@ class _Settings(BaseSettings):
         return model_directory
 
     @property
-    def MODEL_PATH(self) -> Path:
-        return self.MODEL_DIRECTORY / "model.joblib"
-
-    @property
     def PRODUCTION_MODEL_PATH(self) -> Path:
         return self.MODEL_DIRECTORY / "production_model.joblib"
 
