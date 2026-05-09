@@ -36,7 +36,7 @@ def test_train_endpoint_returns_summary(
 
     with (
         patch(
-            "app.api.routes.train.schemas.FileTrainRequest.from_upload",
+            "app.api.routes.train.endpoints.parse_training_upload",
             new_callable=AsyncMock,
             return_value=DataFrame(),
         ),

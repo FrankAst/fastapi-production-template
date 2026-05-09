@@ -1,4 +1,4 @@
 from .endpoints import router as train_router
-from .schemas import FileTrainRequest, TrainResponse
+from .schemas import TrainResponse
 
-__all__ = ["FileTrainRequest", "TrainResponse", "train_router"]
+__all__ = ["TrainResponse", "train_router"]

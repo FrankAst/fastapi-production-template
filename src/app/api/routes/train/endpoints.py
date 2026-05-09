@@ -6,7 +6,7 @@ from fastapi import APIRouter, File, UploadFile
 from app.api.dependencies import TrainingServiceDependency
 
 from .responses import RESPONSES
-from .schemas import FileTrainRequest, TrainResponse
+from .schemas import TrainResponse, parse_training_upload
 
 router = APIRouter(prefix="/train", tags=["Training"])
 
@@ -17,6 +17,6 @@ async def train(
     training_service: TrainingServiceDependency,
     file: Annotated[UploadFile, File(...)],
 ) -> TrainResponse:
-    train_request = await FileTrainRequest.from_upload(file)
-    result = training_service.train(train_request)
+    training_df = await parse_training_upload(file)
+    result = training_service.train(training_df)
     return TrainResponse.model_validate(result)
