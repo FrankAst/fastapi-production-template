@@ -81,7 +81,7 @@ class TrainingService(BaseModel):
         save_model(cast("MLModel", pipeline), Settings.PRODUCTION_MODEL_PATH)
 
     def _train_bootstrap(self, X: DataFrame, y: Series) -> None:
-        ensemble = []
+        ensemble: list[Pipeline] = []
         for i in range(self.lr_config.n_bootstrap):
             X_resampled, y_resampled = resample(  # type: ignore[misc]
                 X, y, replace=True, random_state=self.lr_config.random_state + i
