@@ -1,5 +1,6 @@
 from fastapi import UploadFile
 from pandas import DataFrame
+from pydantic import Field
 
 from app.api.schema import BaseSchema
 from app.domain import SchemaValidator
@@ -17,9 +18,13 @@ async def parse_training_upload(file: UploadFile) -> DataFrame:
 
 
 class TrainResponse(BaseSchema):
-    message: str = "Model trained successfully"
-    n_samples: int
-    n_train: int
-    n_test: int
-    n_bootstrap: int
-    threshold: float
+    message: str = Field(
+        default="Model trained successfully", description="Status message"
+    )
+    n_samples: int = Field(description="Total rows used for training")
+    n_train: int = Field(description="Rows in the training split")
+    n_test: int = Field(description="Rows in the held-out test split")
+    n_bootstrap: int = Field(
+        description="Number of bootstrap resamples in the prediction ensemble"
+    )
+    threshold: float = Field(description="Decision threshold applied at inference")
