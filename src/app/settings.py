@@ -1,4 +1,5 @@
 import sys
+from functools import cached_property
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -35,7 +36,7 @@ class _Settings(BaseSettings):
     def SOCKET_URL(self) -> str:
         return f"http://{self.HOST}:{{port}}"
 
-    @property
+    @cached_property
     def APP_PATH(self) -> Path:
         return Path(__file__).resolve().parent
 
