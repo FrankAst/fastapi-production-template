@@ -91,9 +91,6 @@ def _validate_target_column(df: DataFrame) -> None:
     Raises:
         HTTPException: If the target column contains NaN values or is missing.
     """
-    if df.empty:
-        return
-
     if TARGET_COLUMN not in df.columns:
         raise HTTPException(
             status_code=400,
