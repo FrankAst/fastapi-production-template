@@ -2,6 +2,7 @@ from typing import Annotated
 
 from dependency_injector.wiring import inject
 from fastapi import APIRouter, File, UploadFile
+from starlette.concurrency import run_in_threadpool
 
 from app.api.dependencies import TrainingServiceDependency
 
@@ -18,5 +19,5 @@ async def train(
     file: Annotated[UploadFile, File(...)],
 ) -> TrainResponse:
     training_df = await parse_training_upload(file)
-    result = training_service.train(training_df)
+    result = await run_in_threadpool(training_service.train, training_df)
     return TrainResponse.model_validate(result)
