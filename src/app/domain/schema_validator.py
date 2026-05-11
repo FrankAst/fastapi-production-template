@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import functools
 from typing import TYPE_CHECKING
 
 import pandera as pa
@@ -34,6 +35,19 @@ class SchemaValidator:
         return Settings.MODEL_DIRECTORY / cls.TRAINING_INPUT_SCHEMA_FILENAME
 
     @classmethod
+    @functools.cache
+    def _load_training_schema(cls, schema_path: Path) -> DataFrameSchema:
+        """Parse the YAML schema, cached per-path for the process lifetime.
+
+        Args:
+            schema_path: Path to the training input schema YAML file.
+
+        Returns:
+            DataFrameSchema: Parsed Pandera schema, shared across callers.
+        """
+        return pa.DataFrameSchema.from_yaml(schema_path)  # pyright: ignore[reportUnknownMemberType]
+
+    @classmethod
     def validate_training_input(cls, df: DataFrame) -> DataFrame:
         """
         Validate raw training CSV against the static training input schema.
@@ -54,7 +68,7 @@ class SchemaValidator:
         schema_path = cls.get_training_input_schema_path()
         if not schema_path.exists():
             raise NoTrainingSchemaError
-        schema = pa.DataFrameSchema.from_yaml(schema_path)  # pyright: ignore[reportUnknownMemberType]
+        schema = cls._load_training_schema(schema_path)
         return schema.validate(df, lazy=True)
 
     @classmethod
@@ -80,7 +94,6 @@ class SchemaValidator:
         schema_path = cls.get_training_input_schema_path()
         if not schema_path.exists():
             raise NoTrainingSchemaError
-        schema: DataFrameSchema = pa.DataFrameSchema.from_yaml(schema_path)  # pyright: ignore[reportUnknownMemberType]
-        schema = schema.remove_columns([TARGET_COLUMN])
+        schema = cls._load_training_schema(schema_path).remove_columns([TARGET_COLUMN])
         schema.strict = True
         return schema.validate(df, lazy=True)

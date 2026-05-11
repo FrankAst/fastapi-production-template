@@ -109,3 +109,31 @@ def test_validate_training_input_no_schema_file(
     SchemaValidator.get_training_input_schema_path().unlink(missing_ok=True)
     with pytest.raises(NoTrainingSchemaError):
         SchemaValidator.validate_training_input(nhanes_training_dataframe)
+
+
+def test_load_training_schema_returns_cached_object() -> None:
+    # pylint: disable=protected-access
+    schema_path = SchemaValidator.get_training_input_schema_path()
+    first = SchemaValidator._load_training_schema(schema_path)  # noqa: SLF001
+    second = SchemaValidator._load_training_schema(schema_path)  # noqa: SLF001
+    assert first is second
+
+
+def test_validate_dataframe_does_not_mutate_cached_base_schema(
+    nhanes_training_dataframe: pd.DataFrame,
+) -> None:
+    # pylint: disable=protected-access
+    schema_path = SchemaValidator.get_training_input_schema_path()
+    base_before = SchemaValidator._load_training_schema(schema_path)  # noqa: SLF001
+    columns_before = list(base_before.columns)
+    strict_before = base_before.strict
+
+    features = nhanes_training_dataframe.drop(columns=[TARGET_COLUMN])
+    SchemaValidator.validate_dataframe(features)
+    SchemaValidator.validate_dataframe(features)
+
+    base_after = SchemaValidator._load_training_schema(schema_path)  # noqa: SLF001
+    assert base_after is base_before
+    assert list(base_after.columns) == columns_before
+    assert TARGET_COLUMN in base_after.columns
+    assert base_after.strict == strict_before
