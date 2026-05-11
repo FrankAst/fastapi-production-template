@@ -86,16 +86,16 @@ async def test_process_csv_file_insufficient_columns() -> None:
 
 
 @pytest.mark.anyio
-async def test_process_csv_file_with_headers_only() -> None:
-    """Test CSV file with headers but no data rows."""
+async def test_process_csv_file_rejects_headers_only() -> None:
+    """Test CSV file with headers but no data rows is rejected."""
     csv_data = "name,age,city"
 
     mock_file = Mock(spec=UploadFile)
     mock_file.filename = "headers_only.csv"
     mock_file.read = AsyncMock(return_value=csv_data.encode("utf-8"))
 
-    result = await process_csv_file(mock_file)
+    with pytest.raises(HTTPException) as exc_info:
+        await process_csv_file(mock_file)
 
-    assert isinstance(result, pd.DataFrame)
-    assert len(result) == 0  # No data rows
-    assert list(result.columns) == ["name", "age", "city"]
+    assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
+    assert "CSV contains no data rows" in str(exc_info.value.detail)

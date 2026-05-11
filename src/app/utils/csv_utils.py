@@ -127,6 +127,23 @@ def _validate_number_of_columns(df: DataFrame) -> None:
         )
 
 
+def _validate_non_empty(df: DataFrame) -> None:
+    """
+    Reject CSVs with no data rows.
+
+    Args:
+        df: The DataFrame to validate.
+
+    Raises:
+        HTTPException: If the DataFrame has no rows.
+    """
+    if df.empty:
+        raise HTTPException(
+            status_code=400,
+            detail="CSV contains no data rows.",
+        )
+
+
 async def process_csv_file(file: UploadFile) -> DataFrame:
     """
     Complete CSV processing pipeline: validate filename, read content, parse
@@ -142,6 +159,7 @@ async def process_csv_file(file: UploadFile) -> DataFrame:
     csv_content = await _read_and_decode_csv_content(file)
     df = _parse_csv_to_dataframe(csv_content)
     _validate_number_of_columns(df)
+    _validate_non_empty(df)
     _validate_target_column(df)
 
     return df
