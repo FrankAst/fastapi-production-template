@@ -13,9 +13,7 @@ class _Settings(BaseSettings):
 
     @property
     def MODEL_DIRECTORY(self) -> Path:
-        model_directory = self.APP_PATH / "ml_binaries"
-        model_directory.mkdir(parents=True, exist_ok=True)
-        return model_directory
+        return self.APP_PATH / "ml_binaries"
 
     @property
     def PRODUCTION_MODEL_PATH(self) -> Path:

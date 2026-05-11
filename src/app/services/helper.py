@@ -14,8 +14,10 @@ def load_model(model_path: Path) -> MLModel | None:
 
 
 def save_model(model: MLModel, model_path: Path) -> None:
+    model_path.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(model, model_path)
 
 
 def save_artifact(artifact: Any, path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(artifact, path)
