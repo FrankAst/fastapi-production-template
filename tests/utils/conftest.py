@@ -1,10 +1,9 @@
+from collections.abc import Callable
 from dataclasses import dataclass
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 from fastapi import UploadFile
-
-# Fixtures for utility tests will be added here as needed
 
 
 @dataclass
@@ -25,6 +24,33 @@ class CsvErrorTestData:
     expected_message: str
 
 
+UploadFileFactory = Callable[..., Mock]
+
+
+@pytest.fixture
+def make_upload_file() -> UploadFileFactory:
+    """Factory for mock UploadFile objects with sensible defaults.
+
+    Returns:
+        UploadFileFactory: a callable accepting `filename`, `content`, and
+            `size` keyword arguments and returning a configured `Mock`.
+    """
+
+    def _make(
+        *,
+        filename: str | None = "test.csv",
+        content: bytes = b"",
+        size: int | None = None,
+    ) -> Mock:
+        mock_file = Mock(spec=UploadFile)
+        mock_file.filename = filename
+        mock_file.size = size
+        mock_file.read = AsyncMock(return_value=content)
+        return mock_file
+
+    return _make
+
+
 @pytest.fixture(
     params=[
         "test.txt",
@@ -37,16 +63,17 @@ class CsvErrorTestData:
         "test",
     ]
 )
-def mock_invalid_file(request: pytest.FixtureRequest) -> Mock:
+def mock_invalid_file(
+    request: pytest.FixtureRequest,
+    make_upload_file: UploadFileFactory,
+) -> Mock:
     """
     Fixture to create a mock UploadFile with various invalid filenames.
 
     Returns:
         Mock: A mock UploadFile instance with an invalid filename.
     """
-    mock_file = Mock(spec=UploadFile)
-    mock_file.filename = request.param
-    return mock_file
+    return make_upload_file(filename=request.param)
 
 
 @pytest.fixture(
