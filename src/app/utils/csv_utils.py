@@ -16,7 +16,7 @@ MAX_UPLOAD_SIZE_MB = MAX_UPLOAD_SIZE_BYTES // (1024 * 1024)
 
 
 def _validate_csv_filename_extension(filename: str | None) -> None:
-    """
+    """Validate that the filename is present and ends with the .csv extension.
 
     Args:
         filename: The filename to validate.
