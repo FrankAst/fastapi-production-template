@@ -33,7 +33,7 @@ class _Settings(BaseSettings):
         return self.MODEL_DIRECTORY / "test_set.joblib"
 
     def _socket_url(self, port: int) -> str:
-        return f"http://{self.HOST}:{port}"
+        return f"https://{self.HOST}:{port}"
 
     @cached_property
     def APP_PATH(self) -> Path:
