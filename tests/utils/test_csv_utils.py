@@ -27,6 +27,7 @@ async def test_process_csv_file_success(mock_valid_csv_data: CsvTestData) -> Non
     """
     mock_file = Mock(spec=UploadFile)
     mock_file.filename = mock_valid_csv_data.filename
+    mock_file.size = None
     mock_file.read = AsyncMock(
         return_value=mock_valid_csv_data.csv_data.encode("utf-8")
     )
@@ -60,6 +61,7 @@ async def test_process_csv_file_error_scenarios(
     """Test various CSV error scenarios using parametrized fixture."""
     mock_file = Mock(spec=UploadFile)
     mock_file.filename = mock_error_csv_scenarios.filename
+    mock_file.size = None
     mock_file.read = AsyncMock(return_value=mock_error_csv_scenarios.read_value)
 
     with pytest.raises(HTTPException) as exc_info:
@@ -76,6 +78,7 @@ async def test_process_csv_file_insufficient_columns() -> None:
 
     mock_file = Mock(spec=UploadFile)
     mock_file.filename = "single_column.csv"
+    mock_file.size = None
     mock_file.read = AsyncMock(return_value=csv_data.encode("utf-8"))
 
     with pytest.raises(HTTPException) as exc_info:
@@ -92,6 +95,7 @@ async def test_process_csv_file_rejects_headers_only() -> None:
 
     mock_file = Mock(spec=UploadFile)
     mock_file.filename = "headers_only.csv"
+    mock_file.size = None
     mock_file.read = AsyncMock(return_value=csv_data.encode("utf-8"))
 
     with pytest.raises(HTTPException) as exc_info:
@@ -99,3 +103,24 @@ async def test_process_csv_file_rejects_headers_only() -> None:
 
     assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
     assert "CSV contains no data rows" in str(exc_info.value.detail)
+
+
+@pytest.mark.parametrize(
+    "size_bytes",
+    [
+        pytest.param(50 * 1024 * 1024 + 1, id="just_over_limit"),
+        pytest.param(200 * 1024 * 1024, id="way_over_limit"),
+    ],
+)
+@pytest.mark.anyio
+async def test_process_csv_file_rejects_oversize(size_bytes: int) -> None:
+    """Test CSV files exceeding the 50 MB cap are rejected with HTTP 413."""
+    mock_file = Mock(spec=UploadFile)
+    mock_file.filename = "huge.csv"
+    mock_file.size = size_bytes
+
+    with pytest.raises(HTTPException) as exc_info:
+        await process_csv_file(mock_file)
+
+    assert exc_info.value.status_code == status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
+    assert "File too large" in str(exc_info.value.detail)
