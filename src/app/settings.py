@@ -32,9 +32,8 @@ class _Settings(BaseSettings):
     def TEST_SET_PATH(self) -> Path:
         return self.MODEL_DIRECTORY / "test_set.joblib"
 
-    @property
-    def SOCKET_URL(self) -> str:
-        return f"http://{self.HOST}:{{port}}"
+    def _socket_url(self, port: int) -> str:
+        return f"http://{self.HOST}:{port}"
 
     @cached_property
     def APP_PATH(self) -> Path:
@@ -46,7 +45,7 @@ class _Settings(BaseSettings):
 
     @property
     def UI_HOST(self) -> str:
-        return self.SOCKET_URL.format(port=self.UI_PORT)
+        return self._socket_url(self.UI_PORT)
 
     @property
     def UI_PATH(self) -> Path:
@@ -68,7 +67,7 @@ class _Settings(BaseSettings):
 
     @property
     def API_HOST(self) -> str:
-        return self.SOCKET_URL.format(port=self.API_PORT)
+        return self._socket_url(self.API_PORT)
 
 
 Settings = _Settings()
