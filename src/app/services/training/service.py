@@ -41,7 +41,7 @@ class TrainingService(BaseModel):
             n_samples=len(df),
             n_train=n_train,
             n_test=n_test,
-            n_bootstrap=self.lr_config.n_bootstrap_train,
+            n_bootstrap=self.lr_config.n_bootstrap_pred,
             threshold=self.lr_config.threshold,
         )
 
@@ -82,7 +82,7 @@ class TrainingService(BaseModel):
 
     def _train_bootstrap(self, X: DataFrame, y: Series) -> None:
         ensemble: list[Pipeline] = []
-        for i in range(self.lr_config.n_bootstrap_train):
+        for i in range(self.lr_config.n_bootstrap_pred):
             X_resampled, y_resampled = resample(  # type: ignore[misc]
                 X, y, replace=True, random_state=self.lr_config.random_state + i
             )

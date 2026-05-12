@@ -18,7 +18,7 @@ def fast_lr_config() -> LRVifBicConfig:
     Returns:
         LRVifBicConfig with reduced bootstrap counts.
     """
-    return LRVifBicConfig(n_bootstrap_train=2, n_bootstrap_eval=10)
+    return LRVifBicConfig(n_bootstrap_pred=2, n_bootstrap_eval=10)
 
 
 @pytest.fixture(autouse=True)
