@@ -9,7 +9,6 @@ from sklearn.utils import resample
 from app.domain import TARGET_COLUMN, EvaluationTestSet, LRVifBicConfig, MLModel
 from app.services.helper import save_artifact, save_model
 from app.services.processing import ProcessingService
-from app.services.processing.column_selector import SELECTED_FEATURES
 from app.settings import Settings
 
 from .training_result import TrainingResult
@@ -106,6 +105,5 @@ class TrainingService(BaseModel):
             random_state=self.lr_config.random_state,
         )
         preprocessor = production_pipeline[:-1]
-        transformed = preprocessor.transform(sample)
-        background = DataFrame(transformed, columns=list(SELECTED_FEATURES))
+        background = preprocessor.transform(sample)
         save_artifact(background, Settings.SHAP_BACKGROUND_PATH)

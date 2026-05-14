@@ -48,12 +48,14 @@ def test_persisted_shap_background_has_expected_shape_and_dtype(
     training_service.train(nhanes_training_dataframe)
 
     background = joblib.load(tmp_path / "shap_background.joblib")
+    production_model = joblib.load(tmp_path / "production_model.joblib")
+    classifier_feature_order = list(production_model[-1].feature_names_in_)
 
     assert isinstance(background, pd.DataFrame)
     assert background.shape == (
         training_service.lr_config.n_shap_background,
         len(SELECTED_FEATURES),
     )
-    assert list(background.columns) == list(SELECTED_FEATURES)
+    assert list(background.columns) == classifier_feature_order
     assert all(np.issubdtype(dtype, np.number) for dtype in background.dtypes)
     assert not background.isna().any().any()

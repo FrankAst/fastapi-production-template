@@ -18,7 +18,7 @@ def fast_lr_config() -> LRVifBicConfig:
     Returns:
         LRVifBicConfig with reduced counts.
     """
-    return LRVifBicConfig(n_bootstrap_train=2, n_shap_background=2)
+    return LRVifBicConfig(n_bootstrap_pred=2, n_shap_background=2)
 
 
 @pytest.fixture(autouse=True)
@@ -97,3 +97,31 @@ def prediction_service(
 def known_input_row(nhanes_training_dataframe: pd.DataFrame) -> PredictionInput:
     features = nhanes_training_dataframe.drop(columns=[TARGET_COLUMN]).iloc[[0]]
     return PredictionInput(features=features)
+
+
+@pytest.fixture
+def baseline_patient_features() -> pd.DataFrame:
+    """Single-row feature matrix at neutral values used by SHAP perturbation tests.
+
+    Each column sits roughly in the middle of its plausible range so a parametrised
+    perturbation of one raw input maps cleanly to one post-processed feature.
+
+    Returns:
+        DataFrame with one row and the 12 raw NHANES feature columns.
+    """
+    columns = [
+        "RIDAGEYR",
+        "BMXWAIST",
+        "BMXHT",
+        "told_high_bp",
+        "told_high_cholesterol",
+        "is_female",
+        "drinking_frequency",
+        "diastolic_bp",
+        "systolic_bp",
+        "education_level",
+        "phq9_score",
+        "vigorous_minutes_per_week",
+    ]
+    row = [50.0, 90.0, 170.0, 0.0, 0.0, 0.0, 1.0, 78.0, 118.0, 3.0, 4.0, 60.0]
+    return pd.DataFrame([row], columns=columns)

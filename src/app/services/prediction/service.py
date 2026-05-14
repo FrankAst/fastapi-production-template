@@ -17,7 +17,6 @@ from app.domain import (
     ShapExplanation,
 )
 from app.services.helper import load_artifact, load_model
-from app.services.processing.column_selector import SELECTED_FEATURES
 from app.settings import Settings
 
 from .exceptions import (
@@ -120,13 +119,12 @@ class PredictionService(BaseModel):
         transformed = preprocessor.transform(df)
         shap_values = np.asarray(self.explainer.shap_values(transformed))[0]
         base_value = float(np.asarray(self.explainer.expected_value).item())
+        feature_names = cast("list[str]", list(transformed.columns))
         contributions = tuple(
             sorted(
                 (
                     ShapContribution(feature=feature, shap_value=float(value))
-                    for feature, value in zip(
-                        SELECTED_FEATURES, shap_values, strict=True
-                    )
+                    for feature, value in zip(feature_names, shap_values, strict=True)
                 ),
                 key=lambda contribution: abs(contribution.shap_value),
                 reverse=True,
