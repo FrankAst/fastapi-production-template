@@ -95,10 +95,14 @@ class ShapExplanationSchema(BaseSchema):
 
 class SinglePredictionResponse(BaseSchema):
     probability: float = Field(
-        description="Predicted probability of the positive class"
+        ge=0.0, le=1.0, description="Predicted probability of the positive class"
     )
-    ci_lower: float = Field(description="Lower bound of the 95% bootstrap CI")
-    ci_upper: float = Field(description="Upper bound of the 95% bootstrap CI")
+    ci_lower: float = Field(
+        ge=0.0, le=1.0, description="Lower bound of the 95% bootstrap CI"
+    )
+    ci_upper: float = Field(
+        ge=0.0, le=1.0, description="Upper bound of the 95% bootstrap CI"
+    )
     is_positive: bool = Field(
         description="True when probability exceeds the screening threshold"
     )
@@ -109,4 +113,4 @@ class SinglePredictionResponse(BaseSchema):
 
 class BatchPredictionResponse(BaseSchema):
     predictions: Sequence[float] = Field(description="Array of prediction results")
-    count: int = Field(description="Number of predictions made")
+    count: int = Field(gt=0, description="Number of predictions made")
