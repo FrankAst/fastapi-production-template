@@ -8,6 +8,7 @@ from app.api.dependencies import PredictionServiceDependency
 from app.domain import PredictionInput
 
 from .examples import EXAMPLES
+from .responses import BATCH_RESPONSES, SINGLE_RESPONSES
 from .schemas import (
     BatchPredictionResponse,
     SinglePredictionRequest,
@@ -18,7 +19,7 @@ from .schemas import (
 router = APIRouter(prefix="/prediction", tags=["Prediction"])
 
 
-@router.post("/single")
+@router.post("/single", responses=SINGLE_RESPONSES)
 @inject
 async def predict(
     prediction_request: Annotated[
@@ -45,7 +46,7 @@ async def predict(
     return SinglePredictionResponse.model_validate(result)
 
 
-@router.post("/batch")
+@router.post("/batch", responses=BATCH_RESPONSES)
 @inject
 async def batch_predict(
     prediction_service: PredictionServiceDependency,
