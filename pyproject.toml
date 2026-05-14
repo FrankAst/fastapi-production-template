@@ -146,6 +146,8 @@ skip_covered = true
 [tool.mypy]
 strict = true
 
+mypy_path = "src"
+
 follow_imports = "normal"
 
 python_version = "3.12"
