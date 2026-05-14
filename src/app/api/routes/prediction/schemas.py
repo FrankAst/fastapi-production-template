@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from fastapi import UploadFile
 from pandas import DataFrame
-from pydantic import ConfigDict, Field
+from pydantic import Field
 
 from app.api.schema import BaseSchema
 from app.domain import DrinkingFrequency, EducationLevel, SchemaValidator
@@ -63,26 +63,17 @@ class SinglePredictionRequest(BaseSchema):
         return SchemaValidator.validate_dataframe(df)
 
 
-class BatchPredictionRequest(BaseSchema):
-    file: UploadFile
+async def parse_prediction_upload(file: UploadFile) -> DataFrame:
+    """Parse and validate an uploaded CSV for batch prediction.
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    Accepts a target-free CSV (labels are not provided at inference time) and
+    validates it against the static prediction schema.
 
-    @classmethod
-    async def from_upload(cls, file: UploadFile) -> DataFrame:
-        """
-        Create feature matrix from uploaded file.
-
-        Validates the raw uploaded CSV against the training schema before
-        any processing. This ensures the uploaded data has the correct
-        structure, types, and columns expected by the model.
-
-        Returns:
-            DataFrame: Validated and processed feature data from the uploaded file.
-        """
-        df = await process_csv_file(file, require_target=False)
-
-        return SchemaValidator.validate_dataframe(df)
+    Returns:
+        DataFrame: Validated and coerced feature matrix.
+    """
+    df = await process_csv_file(file, require_target=False)
+    return SchemaValidator.validate_dataframe(df)
 
 
 class ShapContributionSchema(BaseSchema):

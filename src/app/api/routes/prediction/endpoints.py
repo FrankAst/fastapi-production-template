@@ -9,10 +9,10 @@ from app.domain import PredictionInput
 
 from .examples import EXAMPLES
 from .schemas import (
-    BatchPredictionRequest,
     BatchPredictionResponse,
     SinglePredictionRequest,
     SinglePredictionResponse,
+    parse_prediction_upload,
 )
 
 router = APIRouter(prefix="/prediction", tags=["Prediction"])
@@ -61,7 +61,7 @@ async def batch_predict(
     Returns:
         BatchPredictionResponse: The prediction results and count.
     """
-    feature_matrix = await BatchPredictionRequest.from_upload(file)
+    feature_matrix = await parse_prediction_upload(file)
 
     prediction_input = PredictionInput(features=feature_matrix)
     prediction_output = await run_in_threadpool(
