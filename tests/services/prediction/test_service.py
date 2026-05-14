@@ -196,3 +196,22 @@ def test_predict_raises_when_shap_background_is_missing(
 
     with pytest.raises(NoShapBackgroundError):
         service.predict(known_input_row)
+
+
+@pytest.mark.parametrize(
+    "cached_attr",
+    [
+        pytest.param("production_model", id="production_model"),
+        pytest.param("bootstrap_ensemble", id="bootstrap_ensemble"),
+        pytest.param("shap_background", id="shap_background"),
+        pytest.param("explainer", id="explainer"),
+    ],
+)
+def test_cached_property_returns_same_object_across_accesses(
+    prediction_service: PredictionService,
+    cached_attr: str,
+) -> None:
+    first = getattr(prediction_service, cached_attr)
+    second = getattr(prediction_service, cached_attr)
+
+    assert first is second
