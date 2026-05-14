@@ -2,6 +2,7 @@ from typing import Annotated
 
 from dependency_injector.wiring import inject
 from fastapi import APIRouter, Body, File, UploadFile
+from starlette.concurrency import run_in_threadpool
 
 from app.api.dependencies import PredictionServiceDependency
 from app.domain import PredictionInput
@@ -38,7 +39,9 @@ async def predict(
         and the SHAP explanation.
     """
     validated_df = prediction_request.to_validated_dataframe()
-    result = prediction_service.predict(PredictionInput(features=validated_df))
+    result = await run_in_threadpool(
+        prediction_service.predict, PredictionInput(features=validated_df)
+    )
     return SinglePredictionResponse.model_validate(result)
 
 
@@ -61,7 +64,9 @@ async def batch_predict(
     feature_matrix = await BatchPredictionRequest.from_upload(file)
 
     prediction_input = PredictionInput(features=feature_matrix)
-    prediction_output = prediction_service.batch_predict(prediction_input)
+    prediction_output = await run_in_threadpool(
+        prediction_service.batch_predict, prediction_input
+    )
 
     return BatchPredictionResponse(
         predictions=prediction_output.predictions, count=prediction_output.count
