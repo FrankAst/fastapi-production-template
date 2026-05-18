@@ -1,10 +1,9 @@
+from collections.abc import Callable
 from dataclasses import dataclass
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 from fastapi import UploadFile
-
-# Fixtures for utility tests will be added here as needed
 
 
 @dataclass
@@ -25,6 +24,33 @@ class CsvErrorTestData:
     expected_message: str
 
 
+UploadFileFactory = Callable[..., Mock]
+
+
+@pytest.fixture
+def make_upload_file() -> UploadFileFactory:
+    """Factory for mock UploadFile objects with sensible defaults.
+
+    Returns:
+        UploadFileFactory: a callable accepting `filename`, `content`, and
+            `size` keyword arguments and returning a configured `Mock`.
+    """
+
+    def _make(
+        *,
+        filename: str | None = "test.csv",
+        content: bytes = b"",
+        size: int | None = None,
+    ) -> Mock:
+        mock_file = Mock(spec=UploadFile)
+        mock_file.filename = filename
+        mock_file.size = size
+        mock_file.read = AsyncMock(return_value=content)
+        return mock_file
+
+    return _make
+
+
 @pytest.fixture(
     params=[
         "test.txt",
@@ -37,28 +63,34 @@ class CsvErrorTestData:
         "test",
     ]
 )
-def mock_invalid_file(request: pytest.FixtureRequest) -> Mock:
+def mock_invalid_file(
+    request: pytest.FixtureRequest,
+    make_upload_file: UploadFileFactory,
+) -> Mock:
     """
     Fixture to create a mock UploadFile with various invalid filenames.
 
     Returns:
         Mock: A mock UploadFile instance with an invalid filename.
     """
-    mock_file = Mock(spec=UploadFile)
-    mock_file.filename = request.param
-    return mock_file
+    return make_upload_file(filename=request.param)
 
 
 @pytest.fixture(
     params=[
         CsvTestData(
-            csv_data="name,age\nJohn,25\nJane,30",
-            expected_columns=["name", "age"],
+            csv_data="feature1,has_diabetes_or_prediabetes\n1.0,0.0\n2.0,1.0",
+            expected_columns=["feature1", "has_diabetes_or_prediabetes"],
             filename="basic.csv",
         ),
         CsvTestData(
-            csv_data="id,name,score,active\n1,Alice,95.5,true\n2,Bob,87.2,false",
-            expected_columns=["id", "name", "score", "active"],
+            csv_data="feature1,feature2,feature3,has_diabetes_or_prediabetes\n1.0,2.0,3.0,0.0\n4.0,5.0,6.0,1.0",
+            expected_columns=[
+                "feature1",
+                "feature2",
+                "feature3",
+                "has_diabetes_or_prediabetes",
+            ],
             filename="complex.csv",
         ),
     ]
@@ -86,13 +118,17 @@ def mock_valid_csv_data(request: pytest.FixtureRequest) -> CsvTestData:
         ),
         CsvErrorTestData(
             filename="malformed.csv",
-            read_value=b"name,age\nJohn,25,extra_column\nJane",
-            expected_message="Target column (last column) contains missing values",
+            read_value=b"feature1,has_diabetes_or_prediabetes\n1.0,0.0\n2.0,",
+            expected_message=(
+                "Target column 'has_diabetes_or_prediabetes' contains missing values"
+            ),
         ),
         CsvErrorTestData(
             filename="nan_target.csv",
-            read_value=b"feature1,feature2,target\n25.0,10.5,5.0\n30.0,15.2,6.0\n35.0,20.1,",
-            expected_message="Target column (last column) contains missing values",
+            read_value=b"feature1,feature2,has_diabetes_or_prediabetes\n25.0,10.5,0.0\n30.0,15.2,1.0\n35.0,20.1,",
+            expected_message=(
+                "Target column 'has_diabetes_or_prediabetes' contains missing values"
+            ),
         ),
     ]
 )

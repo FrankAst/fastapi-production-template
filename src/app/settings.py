@@ -1,4 +1,5 @@
 import sys
+from functools import cached_property
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -13,19 +14,28 @@ class _Settings(BaseSettings):
 
     @property
     def MODEL_DIRECTORY(self) -> Path:
-        model_directory = self.APP_PATH / "ml_binaries"
-        model_directory.mkdir(parents=True, exist_ok=True)
-        return model_directory
+        return self.APP_PATH / "ml_binaries"
 
     @property
-    def MODEL_PATH(self) -> Path:
-        return self.MODEL_DIRECTORY / "model.joblib"
+    def PRODUCTION_MODEL_PATH(self) -> Path:
+        return self.MODEL_DIRECTORY / "production_model.joblib"
 
     @property
-    def SOCKET_URL(self) -> str:
-        return f"http://{self.HOST}:{{port}}"
+    def EVAL_MODEL_PATH(self) -> Path:
+        return self.MODEL_DIRECTORY / "eval_model.joblib"
 
     @property
+    def BOOTSTRAP_ENSEMBLE_PATH(self) -> Path:
+        return self.MODEL_DIRECTORY / "bootstrap_ensemble.joblib"
+
+    @property
+    def TEST_SET_PATH(self) -> Path:
+        return self.MODEL_DIRECTORY / "test_set.joblib"
+
+    def _socket_url(self, port: int) -> str:
+        return f"https://{self.HOST}:{port}"
+
+    @cached_property
     def APP_PATH(self) -> Path:
         return Path(__file__).resolve().parent
 
@@ -35,7 +45,7 @@ class _Settings(BaseSettings):
 
     @property
     def UI_HOST(self) -> str:
-        return self.SOCKET_URL.format(port=self.UI_PORT)
+        return self._socket_url(self.UI_PORT)
 
     @property
     def UI_PATH(self) -> Path:
@@ -57,7 +67,7 @@ class _Settings(BaseSettings):
 
     @property
     def API_HOST(self) -> str:
-        return self.SOCKET_URL.format(port=self.API_PORT)
+        return self._socket_url(self.API_PORT)
 
 
 Settings = _Settings()

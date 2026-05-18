@@ -1,26 +1,30 @@
 from fastapi import UploadFile
 from pandas import DataFrame
+from pydantic import Field
 
 from app.api.schema import BaseSchema
+from app.domain import SchemaValidator
 from app.utils import process_csv_file
 
 
-class FileTrainRequest(BaseSchema):
-    file: UploadFile
+async def parse_training_upload(file: UploadFile) -> DataFrame:
+    """Parse and validate an uploaded CSV against the training schema.
 
-    class Config:
-        arbitrary_types_allowed = True
-
-    @classmethod
-    async def from_upload(cls, file: UploadFile) -> DataFrame:
-        """
-        Create FileTrainRequest from uploaded file.
-
-        Returns:
-            FileTrainRequest: An instance created from the uploaded file.
-        """
-        return await process_csv_file(file)
+    Returns:
+        DataFrame: Validated and coerced training DataFrame.
+    """
+    df = await process_csv_file(file)
+    return SchemaValidator.validate_training_input(df)
 
 
 class TrainResponse(BaseSchema):
-    message: str = "Model trained successfully"
+    message: str = Field(
+        default="Model trained successfully", description="Status message"
+    )
+    n_samples: int = Field(description="Total rows used for training")
+    n_train: int = Field(description="Rows in the training split")
+    n_test: int = Field(description="Rows in the held-out test split")
+    n_bootstrap: int = Field(
+        description="Number of bootstrap resamples in the prediction ensemble"
+    )
+    threshold: float = Field(description="Decision threshold applied at inference")

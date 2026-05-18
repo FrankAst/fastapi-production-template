@@ -2,11 +2,12 @@ from typing import Annotated
 
 from dependency_injector.wiring import inject
 from fastapi import APIRouter, File, UploadFile
+from starlette.concurrency import run_in_threadpool
 
 from app.api.dependencies import TrainingServiceDependency
 
 from .responses import RESPONSES
-from .schemas import FileTrainRequest, TrainResponse
+from .schemas import TrainResponse, parse_training_upload
 
 router = APIRouter(prefix="/train", tags=["Training"])
 
@@ -17,12 +18,6 @@ async def train(
     training_service: TrainingServiceDependency,
     file: Annotated[UploadFile, File(...)],
 ) -> TrainResponse:
-    # Create request object and process file
-    train_request = await FileTrainRequest.from_upload(file)
-
-    # Train the model
-    training_service.train(train_request)
-
-    return TrainResponse(
-        message=f"Model trained successfully with {train_request.shape[0]} samples"
-    )
+    training_df = await parse_training_upload(file)
+    result = await run_in_threadpool(training_service.train, training_df)
+    return TrainResponse.model_validate(result)

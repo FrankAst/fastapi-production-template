@@ -1,3 +1,3 @@
 """Domain constants for the ML training application."""
 
-# Training data validation constants
+TARGET_COLUMN = "has_diabetes_or_prediabetes"

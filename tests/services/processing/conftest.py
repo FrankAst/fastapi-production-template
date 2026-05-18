@@ -52,6 +52,7 @@ def _age_test_cases() -> list[Any]:
         (72, "senior", "senior_mid"),
         (79, "senior", "senior_upper"),
         (80, "elderly", "elderly_top_coded"),
+        (83, "elderly", "elderly_above_top_coded"),
         (np.nan, "age_unknown", "unknown_nan"),
     ]
     return [
