@@ -7,9 +7,11 @@ from pandera.errors import SchemaErrors
 
 from app.domain import NoTrainingSchemaError
 from app.services import ArtifactPersistError, NoTrainedModelError
+from app.services.evaluation import NoEvaluationArtifactsError
 from app.services.training import DimensionalityMismatchError
 
 from .domain import no_trained_model_handler, no_training_schema_handler
+from .evaluation import no_evaluation_artifacts_handler
 from .persistence import artifact_persist_handler
 from .training import dimensionality_mismatch_handler
 from .validation import schema_validation_handler
@@ -19,6 +21,7 @@ ExceptionHandler = Callable[[Request, Exception], Response]
 EXCEPTION_HANDLERS: dict[type[Exception], ExceptionHandler] = {
     ArtifactPersistError: artifact_persist_handler,  # type: ignore[dict-item]
     DimensionalityMismatchError: dimensionality_mismatch_handler,  # type: ignore[dict-item]
+    NoEvaluationArtifactsError: no_evaluation_artifacts_handler,  # type: ignore[dict-item]
     NoTrainedModelError: no_trained_model_handler,  # type: ignore[dict-item]
     NoTrainingSchemaError: no_training_schema_handler,  # type: ignore[dict-item]
     SchemaErrors: schema_validation_handler,

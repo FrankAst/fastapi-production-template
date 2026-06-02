@@ -19,7 +19,7 @@ def test_train_returns_correct_counts(
     assert result.n_samples == n_samples
     assert result.n_train == n_train
     assert result.n_test == n_test
-    assert result.n_bootstrap == training_service.lr_config.n_bootstrap
+    assert result.n_bootstrap == training_service.lr_config.n_bootstrap_pred
 
 
 def test_train_writes_artifact_files(

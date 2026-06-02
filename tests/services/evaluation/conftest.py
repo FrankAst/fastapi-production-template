@@ -6,23 +6,24 @@ import pandas as pd
 import pytest
 
 from app.domain.models import LRVifBicConfig
+from app.services.evaluation import EvaluationService
 from app.services.training import TrainingService
 from app.settings import Settings
 
 
 @pytest.fixture
 def fast_lr_config() -> LRVifBicConfig:
-    """LRVifBicConfig with n_bootstrap_pred=2 for fast tests.
+    """LRVifBicConfig with fast bootstrap counts for training and evaluation.
 
     Returns:
-        LRVifBicConfig with reduced bootstrap count.
+        LRVifBicConfig with reduced bootstrap counts.
     """
-    return LRVifBicConfig(n_bootstrap_pred=2)
+    return LRVifBicConfig(n_bootstrap_pred=2, n_bootstrap_eval=10)
 
 
 @pytest.fixture(autouse=True)
 def mock_artifact_paths(tmp_path: Path) -> Generator[None]:
-    """Redirect all artifact and schema writes to tmp_path for every training test."""
+    """Redirect all artifact writes to tmp_path for every evaluation test."""
     paths: dict[str, Path] = {
         "EVAL_MODEL_PATH": tmp_path / "eval_model.joblib",
         "PRODUCTION_MODEL_PATH": tmp_path / "production_model.joblib",
@@ -35,11 +36,6 @@ def mock_artifact_paths(tmp_path: Path) -> Generator[None]:
     yield
     for attr, prop in original.items():
         setattr(type(Settings), attr, prop)
-
-
-@pytest.fixture
-def training_service(fast_lr_config: LRVifBicConfig) -> TrainingService:
-    return TrainingService(lr_config=fast_lr_config)
 
 
 @pytest.fixture
@@ -77,3 +73,17 @@ def nhanes_training_dataframe() -> pd.DataFrame:
         [58.0, 107.0, 166.0, 1.0, 0.0, 1.0, 1.0, 92.0, 138.0, 2.0, 7.0, 20.0, 1.0],
     ]
     return pd.DataFrame(rows, columns=columns)
+
+
+@pytest.fixture
+def evaluation_service(
+    nhanes_training_dataframe: pd.DataFrame,
+    fast_lr_config: LRVifBicConfig,
+) -> EvaluationService:
+    """EvaluationService with pre-built artifacts from a fast training run.
+
+    Returns:
+        EvaluationService ready to call evaluate().
+    """
+    TrainingService(lr_config=fast_lr_config).train(nhanes_training_dataframe)
+    return EvaluationService(lr_config=fast_lr_config)
