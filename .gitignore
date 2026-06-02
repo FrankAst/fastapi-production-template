@@ -208,3 +208,13 @@ __marimo__/
 pytest-report.xml
 src/app/playground/wandb/
 src/app/playground/wandb_charts/
+
+# Trained ML artifacts (regenerable; model.joblib stays tracked)
+src/app/ml_binaries/*.joblib
+
+# Old/archived data
+dataset/old/
+dataset/output/old/
+
+# Playground analysis artifacts
+src/app/playground/artifacts/
