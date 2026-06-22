@@ -17,12 +17,10 @@ class FeaturesContainNaNError(ValueError):
         super().__init__("Features list must not contain NaN values")
 
 
-class NoTrainingSchemaError(Exception):
-    def __init__(self) -> None:
-        super().__init__(
-            "No training schema found. "
-            "Please train the model first to generate the schema."
-        )
+class NoTrainingSchemaError(AppError):
+    message: str = (
+        "No training schema found. Please train the model first to generate the schema."
+    )
 
 
 class ClinicalConsistencyError(ValueError):

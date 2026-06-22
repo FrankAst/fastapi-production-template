@@ -1,22 +1,19 @@
-from dataclasses import dataclass
+from app.domain import AppError
 
 
-@dataclass
-class NoTrainedModelError(Exception):
+class NoTrainedModelError(AppError):
     message: str = (
         "No trained model found. Please train the model before making predictions."
     )
 
 
-@dataclass
-class NoBootstrapEnsembleError(Exception):
+class NoBootstrapEnsembleError(AppError):
     message: str = (
         "No bootstrap ensemble found. Please train the model before making predictions."
     )
 
 
-@dataclass
-class NoShapBackgroundError(Exception):
+class NoShapBackgroundError(AppError):
     message: str = (
         "No SHAP background dataset found. "
         "Please train the model before making predictions."
