@@ -1,4 +1,10 @@
-# Exceptions related to prediction input validation
+class AppError(Exception):
+    """Base for errors translated to HTTP responses by error_handlers/."""
+
+    message: str = "An application error occurred."
+
+    def __init__(self, message: str | None = None) -> None:
+        super().__init__(message or self.message)
 
 
 class FeaturesEmptyError(ValueError):

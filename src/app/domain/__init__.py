@@ -2,8 +2,10 @@ from .base import BaseEntity
 from .batch_prediction_output import BatchPredictionOutput
 from .constants import TARGET_COLUMN
 from .enums import DrinkingFrequency, EducationLevel
+from .error_response import ErrorResponse
 from .evaluation_test_set import EvaluationTestSet
 from .exceptions import (
+    AppError,
     ClinicalConsistencyError,
     FeaturesContainNaNError,
     FeaturesEmptyError,
@@ -19,11 +21,13 @@ from .shap_explanation import ShapExplanation
 
 __all__ = [
     "TARGET_COLUMN",
+    "AppError",
     "BaseEntity",
     "BatchPredictionOutput",
     "ClinicalConsistencyError",
     "DrinkingFrequency",
     "EducationLevel",
+    "ErrorResponse",
     "EvaluationTestSet",
     "FeaturesContainNaNError",
     "FeaturesEmptyError",
