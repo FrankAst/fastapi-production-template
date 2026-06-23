@@ -1,7 +1,10 @@
 from typing import Any
 
+from app.domain import ErrorResponse
+
 RESPONSES: dict[int | str, dict[str, Any]] = {
-    400: {
-        "description": "Evaluation artifacts missing — model has not been trained yet."
+    409: {
+        "model": ErrorResponse,
+        "description": "Evaluation artifacts missing — train the model first.",
     },
 }
