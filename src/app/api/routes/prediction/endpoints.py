@@ -21,7 +21,7 @@ router = APIRouter(prefix="/prediction", tags=["Prediction"])
 
 @router.post("/single", responses=SINGLE_RESPONSES)
 @inject
-async def predict(
+async def single_predict(
     prediction_request: Annotated[
         SinglePredictionRequest, Body(openapi_examples=EXAMPLES)
     ],
