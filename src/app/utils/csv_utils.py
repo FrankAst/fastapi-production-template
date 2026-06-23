@@ -3,12 +3,13 @@
 from io import StringIO
 
 import pandas as pd
-from fastapi import HTTPException, UploadFile, status
+from fastapi import UploadFile
 from pandas import DataFrame
 
 from app.domain.constants import TARGET_COLUMN
 
-# CSV validation constants
+from .csv_exceptions import CsvContentError, CsvFormatError, CsvSizeError
+
 SUPPORTED_CSV_EXTENSION = ".csv"
 MIN_REQUIRED_COLUMNS = 2
 MAX_UPLOAD_SIZE_BYTES = 50 * 1024 * 1024
@@ -22,30 +23,25 @@ def _validate_csv_filename_extension(filename: str | None) -> None:
         filename: The filename to validate.
 
     Raises:
-        HTTPException: If the filename is None or doesn't end with .csv.
+        CsvFormatError: If the filename is None or doesn't end with .csv.
     """
     if not filename:
-        raise HTTPException(
-            status_code=400, detail="Invalid file type. Filename is missing."
-        )
+        msg = "Invalid file type. Filename is missing."
+        raise CsvFormatError(msg)
 
     if not filename.lower().endswith(SUPPORTED_CSV_EXTENSION):
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid file type. Only CSV files (.csv) are supported.",
-        )
+        msg = "Invalid file type. Only CSV files (.csv) are supported."
+        raise CsvFormatError(msg)
 
 
 def _raise_upload_too_large() -> None:
-    """Raise HTTP 413 with the standard `MAX_UPLOAD_SIZE_MB` message.
+    """Raise CsvSizeError with the standard `MAX_UPLOAD_SIZE_MB` message.
 
     Raises:
-        HTTPException: Always, with status 413.
+        CsvSizeError: Always.
     """
-    raise HTTPException(
-        status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-        detail=f"File too large. Maximum size is {MAX_UPLOAD_SIZE_MB} MB.",
-    )
+    msg = f"File too large. Maximum size is {MAX_UPLOAD_SIZE_MB} MB."
+    raise CsvSizeError(msg)
 
 
 async def _read_and_decode_csv_content(file: UploadFile) -> str:
@@ -59,8 +55,8 @@ async def _read_and_decode_csv_content(file: UploadFile) -> str:
         str: The decoded CSV content as a string.
 
     Raises:
-        HTTPException: 413 if the upload exceeds `MAX_UPLOAD_SIZE_BYTES`;
-            400 for any other read/decode failure.
+        CsvSizeError: If the upload exceeds `MAX_UPLOAD_SIZE_BYTES`.
+        CsvFormatError: For any other read/decode failure.
     """
     if file.size is not None and file.size > MAX_UPLOAD_SIZE_BYTES:
         _raise_upload_too_large()
@@ -70,12 +66,11 @@ async def _read_and_decode_csv_content(file: UploadFile) -> str:
         if len(contents) > MAX_UPLOAD_SIZE_BYTES:
             _raise_upload_too_large()
         return contents.decode("utf-8")
-    except HTTPException:
+    except CsvSizeError:
         raise
     except Exception as err:
-        raise HTTPException(
-            status_code=400, detail=f"Error reading file content: {err!s}"
-        ) from err
+        msg = f"Error reading file content: {err!s}"
+        raise CsvFormatError(msg) from err
 
 
 def _parse_csv_to_dataframe(csv_content: str) -> DataFrame:
@@ -89,14 +84,13 @@ def _parse_csv_to_dataframe(csv_content: str) -> DataFrame:
         DataFrame: The parsed CSV data as a pandas DataFrame.
 
     Raises:
-        HTTPException: If there's an error parsing the CSV content.
+        CsvFormatError: If there's an error parsing the CSV content.
     """
     try:
         return pd.read_csv(StringIO(csv_content))
     except Exception as err:
-        raise HTTPException(
-            status_code=400, detail=f"Error parsing CSV: {err!s}"
-        ) from err
+        msg = f"Error parsing CSV: {err!s}"
+        raise CsvFormatError(msg) from err
 
 
 def _validate_target_column(df: DataFrame) -> None:
@@ -107,22 +101,18 @@ def _validate_target_column(df: DataFrame) -> None:
         df: The DataFrame to validate.
 
     Raises:
-        HTTPException: If the target column contains NaN values or is missing.
+        CsvContentError: If the target column contains NaN values or is missing.
     """
     if TARGET_COLUMN not in df.columns:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Missing required target column: '{TARGET_COLUMN}'.",
-        )
+        msg = f"Missing required target column: '{TARGET_COLUMN}'."
+        raise CsvContentError(msg)
 
     if df[TARGET_COLUMN].isna().any():
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                f"Target column '{TARGET_COLUMN}' contains missing values. "
-                "Please ensure all target values are provided."
-            ),
+        msg = (
+            f"Target column '{TARGET_COLUMN}' contains missing values. "
+            "Please ensure all target values are provided."
         )
+        raise CsvContentError(msg)
 
 
 def _validate_number_of_columns(df: DataFrame) -> None:
@@ -133,13 +123,11 @@ def _validate_number_of_columns(df: DataFrame) -> None:
         df: The DataFrame to validate.
 
     Raises:
-        HTTPException: If the DataFrame has fewer than two columns.
+        CsvContentError: If the DataFrame has fewer than two columns.
     """
     if df.shape[1] < MIN_REQUIRED_COLUMNS:
-        raise HTTPException(
-            status_code=400,
-            detail="CSV must contain at least two columns (features and target).",
-        )
+        msg = "CSV must contain at least two columns (features and target)."
+        raise CsvContentError(msg)
 
 
 def _validate_non_empty(df: DataFrame) -> None:
@@ -150,13 +138,11 @@ def _validate_non_empty(df: DataFrame) -> None:
         df: The DataFrame to validate.
 
     Raises:
-        HTTPException: If the DataFrame has no rows.
+        CsvContentError: If the DataFrame has no rows.
     """
     if df.empty:
-        raise HTTPException(
-            status_code=400,
-            detail="CSV contains no data rows.",
-        )
+        msg = "CSV contains no data rows."
+        raise CsvContentError(msg)
 
 
 async def process_csv_file(

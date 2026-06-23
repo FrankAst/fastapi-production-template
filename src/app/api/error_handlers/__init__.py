@@ -14,7 +14,9 @@ from app.services.prediction import (
     NoTrainedModelError,
 )
 from app.services.processing import MissingFeatureColumnsError
+from app.utils import CsvContentError, CsvFormatError, CsvSizeError
 
+from .csv import csv_content_handler, csv_format_handler, csv_size_handler
 from .domain import (
     no_bootstrap_ensemble_handler,
     no_shap_background_handler,
@@ -31,6 +33,9 @@ ExceptionHandler = Callable[[Request, Exception], Response]
 EXCEPTION_HANDLERS: dict[type[Exception], ExceptionHandler] = {
     ArtifactPersistError: artifact_persist_handler,  # type: ignore[dict-item]
     ClinicalConsistencyError: clinical_consistency_handler,  # type: ignore[dict-item]
+    CsvContentError: csv_content_handler,  # type: ignore[dict-item]
+    CsvFormatError: csv_format_handler,  # type: ignore[dict-item]
+    CsvSizeError: csv_size_handler,  # type: ignore[dict-item]
     MissingFeatureColumnsError: missing_feature_columns_handler,  # type: ignore[dict-item]
     NoBootstrapEnsembleError: no_bootstrap_ensemble_handler,  # type: ignore[dict-item]
     NoEvaluationArtifactsError: no_evaluation_artifacts_handler,  # type: ignore[dict-item]
