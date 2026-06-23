@@ -41,7 +41,9 @@ class SinglePredictionRequest(BaseSchema):
     systolic_bp: float | None = Field(
         default=None, ge=50, le=260, description="Systolic blood pressure"
     )
-    education_level: EducationLevel = Field(description="Education level category")
+    education_level: EducationLevel | None = Field(
+        default=None, description="Education level category"
+    )
     phq9_score: int | None = Field(
         default=None, ge=0, le=27, description="PHQ-9 depression score 0-27"
     )

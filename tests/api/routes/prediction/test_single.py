@@ -160,6 +160,7 @@ def test_single_prediction_rejects_out_of_domain_value(
         "drinkingFrequency",
         "diastolicBp",
         "systolicBp",
+        "educationLevel",
         "phq9Score",
         "vigorousMinutesPerWeek",
     ],
@@ -180,17 +181,6 @@ def test_single_prediction_accepts_null_for_nullable_fields(
         response = client.post("/prediction/single", json=payload_with_null)
 
     assert response.status_code == status.HTTP_200_OK
-
-
-def test_single_prediction_rejects_null_education_level(
-    client: TestClient,
-    realistic_payload: dict[str, object],
-) -> None:
-    payload_with_null_education = {**realistic_payload, "educationLevel": None}
-
-    response = client.post("/prediction/single", json=payload_with_null_education)
-
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 def test_single_prediction_rejects_clinically_inconsistent_payload(
