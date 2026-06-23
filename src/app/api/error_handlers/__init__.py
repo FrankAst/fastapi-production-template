@@ -17,14 +17,14 @@ from app.services.processing import MissingFeatureColumnsError
 from app.utils import CsvContentError, CsvFormatError, CsvSizeError
 
 from .csv import csv_content_handler, csv_format_handler, csv_size_handler
-from .domain import (
+from .domain import no_training_schema_handler
+from .evaluation import no_evaluation_artifacts_handler
+from .persistence import artifact_persist_handler
+from .prediction import (
     no_bootstrap_ensemble_handler,
     no_shap_background_handler,
     no_trained_model_handler,
-    no_training_schema_handler,
 )
-from .evaluation import no_evaluation_artifacts_handler
-from .persistence import artifact_persist_handler
 from .processing import missing_feature_columns_handler
 from .validation import clinical_consistency_handler, schema_validation_handler
 
