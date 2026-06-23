@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from fastapi import UploadFile
 from pandas import DataFrame
 from pydantic import Field
+from starlette.concurrency import run_in_threadpool
 
 from app.api.schema import BaseSchema
 from app.domain import DrinkingFrequency, EducationLevel, SchemaValidator
@@ -75,7 +76,7 @@ async def parse_prediction_upload(file: UploadFile) -> DataFrame:
         DataFrame: Validated and coerced feature matrix.
     """
     df = await process_csv_file(file, require_target=False)
-    return SchemaValidator.validate_dataframe(df)
+    return await run_in_threadpool(SchemaValidator.validate_dataframe, df)
 
 
 class ShapContributionSchema(BaseSchema):

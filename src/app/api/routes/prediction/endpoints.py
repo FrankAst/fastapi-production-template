@@ -39,7 +39,7 @@ async def single_predict(
         SinglePredictionResponse: Probability, CI bounds, screening flag,
         and the SHAP explanation.
     """
-    validated_df = prediction_request.to_validated_dataframe()
+    validated_df = await run_in_threadpool(prediction_request.to_validated_dataframe)
     result = await run_in_threadpool(
         prediction_service.predict, PredictionInput(features=validated_df)
     )

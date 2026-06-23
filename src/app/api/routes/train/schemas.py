@@ -1,6 +1,7 @@
 from fastapi import UploadFile
 from pandas import DataFrame
 from pydantic import Field
+from starlette.concurrency import run_in_threadpool
 
 from app.api.schema import BaseSchema
 from app.domain import SchemaValidator
@@ -14,7 +15,7 @@ async def parse_training_upload(file: UploadFile) -> DataFrame:
         DataFrame: Validated and coerced training DataFrame.
     """
     df = await process_csv_file(file)
-    return SchemaValidator.validate_training_input(df)
+    return await run_in_threadpool(SchemaValidator.validate_training_input, df)
 
 
 class TrainResponse(BaseSchema):
