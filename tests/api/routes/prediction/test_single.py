@@ -207,7 +207,9 @@ def test_single_prediction_rejects_clinically_inconsistent_payload(
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     body = response.json()
-    assert body["error"] == "Clinical consistency validation failed"
-    assert body["failure_cases"] == [
+    assert body["detail"] == (
+        "Input contains rows with physiologically inconsistent feature combinations"
+    )
+    assert body["failureCases"] == [
         {"column": "systolic_bp", "check": "greater_than(diastolic_bp)", "index": 0}
     ]
