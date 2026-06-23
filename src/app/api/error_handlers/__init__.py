@@ -13,7 +13,6 @@ from app.services.prediction import (
     NoShapBackgroundError,
     NoTrainedModelError,
 )
-from app.services.training import DimensionalityMismatchError
 
 from .domain import (
     no_bootstrap_ensemble_handler,
@@ -23,7 +22,6 @@ from .domain import (
 )
 from .evaluation import no_evaluation_artifacts_handler
 from .persistence import artifact_persist_handler
-from .training import dimensionality_mismatch_handler
 from .validation import clinical_consistency_handler, schema_validation_handler
 
 ExceptionHandler = Callable[[Request, Exception], Response]
@@ -31,7 +29,6 @@ ExceptionHandler = Callable[[Request, Exception], Response]
 EXCEPTION_HANDLERS: dict[type[Exception], ExceptionHandler] = {
     ArtifactPersistError: artifact_persist_handler,  # type: ignore[dict-item]
     ClinicalConsistencyError: clinical_consistency_handler,  # type: ignore[dict-item]
-    DimensionalityMismatchError: dimensionality_mismatch_handler,  # type: ignore[dict-item]
     NoBootstrapEnsembleError: no_bootstrap_ensemble_handler,  # type: ignore[dict-item]
     NoEvaluationArtifactsError: no_evaluation_artifacts_handler,  # type: ignore[dict-item]
     NoShapBackgroundError: no_shap_background_handler,  # type: ignore[dict-item]

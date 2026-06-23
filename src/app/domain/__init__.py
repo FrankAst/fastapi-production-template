@@ -7,7 +7,6 @@ from .evaluation_test_set import EvaluationTestSet
 from .exceptions import (
     AppError,
     ClinicalConsistencyError,
-    FeaturesContainNaNError,
     FeaturesEmptyError,
     NoTrainingSchemaError,
 )
@@ -29,7 +28,6 @@ __all__ = [
     "EducationLevel",
     "ErrorResponse",
     "EvaluationTestSet",
-    "FeaturesContainNaNError",
     "FeaturesEmptyError",
     "LRVifBicConfig",
     "MLModel",
