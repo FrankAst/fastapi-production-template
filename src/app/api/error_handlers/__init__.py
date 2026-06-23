@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from fastapi import Request, Response
+from fastapi.exceptions import RequestValidationError
 from pandera.errors import SchemaErrors
 
 from app.domain import ClinicalConsistencyError, NoTrainingSchemaError
@@ -26,6 +27,7 @@ from .prediction import (
     no_trained_model_handler,
 )
 from .processing import missing_feature_columns_handler
+from .request_validation import request_validation_handler
 from .validation import clinical_consistency_handler, schema_validation_handler
 
 ExceptionHandler = Callable[[Request, Exception], Response]
@@ -42,6 +44,7 @@ EXCEPTION_HANDLERS: dict[type[Exception], ExceptionHandler] = {
     NoShapBackgroundError: no_shap_background_handler,  # type: ignore[dict-item]
     NoTrainedModelError: no_trained_model_handler,  # type: ignore[dict-item]
     NoTrainingSchemaError: no_training_schema_handler,  # type: ignore[dict-item]
+    RequestValidationError: request_validation_handler,  # type: ignore[dict-item]
     SchemaErrors: schema_validation_handler,
 }
 
