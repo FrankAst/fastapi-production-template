@@ -23,7 +23,7 @@ class NoTrainingSchemaError(AppError):
     )
 
 
-class ClinicalConsistencyError(ValueError):
+class ClinicalConsistencyError(AppError):
     """Raised when input violates clinical cross-field rules."""
 
     def __init__(self, failure_cases: list[dict[str, object]]) -> None:
