@@ -202,6 +202,7 @@ ignore = [
     "ANN401",
     "COM812",
     "RUF067", # __init__ module should only contain docstrings and re-exports
+    "RUF076", # autouse fixtures are intentional in conftests (DI override, path mocks)
 ]
 
 [tool.ruff.format]
