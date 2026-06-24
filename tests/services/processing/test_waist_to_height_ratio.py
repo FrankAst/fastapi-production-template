@@ -1,6 +1,7 @@
 import pandas as pd
 import pytest
 
+from app.services.processing import MissingFeatureColumnsError
 from app.services.processing.waist_to_height_ratio.transformer import WaistToHeightRatio
 
 
@@ -43,5 +44,5 @@ def test_edge_case_produces_expected_ratio(
 def test_raises_on_missing_column() -> None:
     df = pd.DataFrame({"other_col": [1, 2]})
 
-    with pytest.raises(ValueError, match="requires columns"):
+    with pytest.raises(MissingFeatureColumnsError):
         WaistToHeightRatio().transform(df)

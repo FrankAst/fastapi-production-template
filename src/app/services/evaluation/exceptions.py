@@ -1,2 +1,8 @@
-class NoEvaluationArtifactsError(Exception):
-    """Raised when evaluation artifacts are missing — model has not been trained yet."""
+from app.domain import AppError
+
+
+class NoEvaluationArtifactsError(AppError):
+    message: str = (
+        "No evaluation artifacts found. "
+        "Please train the model first to generate evaluation outputs."
+    )

@@ -1,6 +1,7 @@
 from fastapi import UploadFile
 from pandas import DataFrame
 from pydantic import Field
+from starlette.concurrency import run_in_threadpool
 
 from app.api.schema import BaseSchema
 from app.domain import SchemaValidator
@@ -14,7 +15,7 @@ async def parse_training_upload(file: UploadFile) -> DataFrame:
         DataFrame: Validated and coerced training DataFrame.
     """
     df = await process_csv_file(file)
-    return SchemaValidator.validate_training_input(df)
+    return await run_in_threadpool(SchemaValidator.validate_training_input, df)
 
 
 class TrainResponse(BaseSchema):
@@ -26,5 +27,8 @@ class TrainResponse(BaseSchema):
     n_test: int = Field(description="Rows in the held-out test split")
     n_bootstrap: int = Field(
         description="Number of bootstrap resamples in the prediction ensemble"
+    )
+    n_shap_background: int = Field(
+        description="Number of rows in the SHAP background sample"
     )
     threshold: float = Field(description="Decision threshold applied at inference")

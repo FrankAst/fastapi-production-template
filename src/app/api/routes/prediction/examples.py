@@ -1,16 +1,22 @@
 from fastapi.openapi.models import Example
 
-from .schemas import SinglePredictionRequest
-
 EXAMPLES: dict[str, Example] = {
     "normal": {
-        "summary": "A normal example",
-        "description": "A **normal** item works correctly.",
-        "value": SinglePredictionRequest.create_example().model_dump(by_alias=True),
-    },
-    "invalid": {
-        "summary": "An invalid example",
-        "description": "A **invalid** item does not work.",
-        "value": SinglePredictionRequest.create_example().model_dump(by_alias=True),
+        "summary": "Realistic adult patient",
+        "description": "Clinically plausible record that should produce a prediction.",
+        "value": {
+            "RIDAGEYR": 55,
+            "BMXWAIST": 95.0,
+            "BMXHT": 170.0,
+            "toldHighBp": False,
+            "toldHighCholesterol": False,
+            "isFemale": True,
+            "drinkingFrequency": 1,
+            "diastolicBp": 80.0,
+            "systolicBp": 130.0,
+            "educationLevel": 3,
+            "phq9Score": 4,
+            "vigorousMinutesPerWeek": 90,
+        },
     },
 }

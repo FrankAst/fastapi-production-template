@@ -10,8 +10,14 @@ from pandera import DataFrameSchema
 
 from app.settings import Settings
 
-from .constants import TARGET_COLUMN
-from .exceptions import NoTrainingSchemaError
+from .constants import (
+    DIASTOLIC_BP_COLUMN,
+    HEIGHT_COLUMN,
+    SYSTOLIC_BP_COLUMN,
+    TARGET_COLUMN,
+    WAIST_COLUMN,
+)
+from .exceptions import ClinicalConsistencyError, NoTrainingSchemaError
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -96,4 +102,50 @@ class SchemaValidator:
             raise NoTrainingSchemaError
         schema = cls._load_training_schema(schema_path).remove_columns([TARGET_COLUMN])
         schema.strict = True
-        return schema.validate(df, lazy=True)
+        validated = schema.validate(df, lazy=True)
+        cls._validate_clinical_consistency(validated)
+        return validated
+
+    @staticmethod
+    def _validate_clinical_consistency(df: DataFrame) -> None:
+        """Reject rows with physiologically inconsistent feature combinations.
+
+        Rows with NaN in any compared column are skipped — the schema permits
+        nulls and the downstream Imputer handles them. Explicit ``.notna()``
+        masks make this intentional rather than relying on pandas'
+        NaN-comparison semantics.
+
+        Raises:
+            ClinicalConsistencyError: If any row violates a clinical rule.
+        """
+        bp_both_present = (
+            df[SYSTOLIC_BP_COLUMN].notna() & df[DIASTOLIC_BP_COLUMN].notna()
+        )
+        waist_both_present = df[WAIST_COLUMN].notna() & df[HEIGHT_COLUMN].notna()
+
+        bp_violations = df.index[
+            bp_both_present & (df[SYSTOLIC_BP_COLUMN] <= df[DIASTOLIC_BP_COLUMN])
+        ]
+        waist_violations = df.index[
+            waist_both_present & (df[WAIST_COLUMN] >= df[HEIGHT_COLUMN])
+        ]
+
+        if bp_violations.empty and waist_violations.empty:
+            return
+
+        failure_cases: list[dict[str, object]] = [
+            {
+                "column": SYSTOLIC_BP_COLUMN,
+                "check": f"greater_than({DIASTOLIC_BP_COLUMN})",
+                "index": int(idx),
+            }
+            for idx in bp_violations
+        ] + [
+            {
+                "column": WAIST_COLUMN,
+                "check": f"less_than({HEIGHT_COLUMN})",
+                "index": int(idx),
+            }
+            for idx in waist_violations
+        ]
+        raise ClinicalConsistencyError(failure_cases=failure_cases)

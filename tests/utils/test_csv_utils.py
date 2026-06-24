@@ -8,8 +8,8 @@ from unittest.mock import Mock
 
 import pandas as pd
 import pytest
-from fastapi import HTTPException, status
 
+from app.utils import CsvContentError, CsvFormatError, CsvSizeError
 from app.utils.csv_utils import process_csv_file
 from tests.utils.conftest import (
     CsvErrorTestData,
@@ -42,11 +42,10 @@ async def test_process_csv_file_success(
 @pytest.mark.anyio
 async def test_process_csv_file_invalid_filename(mock_invalid_file: Mock) -> None:
     """Test handling of invalid filenames."""
-    with pytest.raises(HTTPException) as exc_info:
+    with pytest.raises(CsvFormatError) as exc_info:
         await process_csv_file(mock_invalid_file)
 
-    assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
-    assert "Invalid file type" in str(exc_info.value.detail)
+    assert "Invalid file type" in str(exc_info.value)
     mock_invalid_file.read.assert_not_called()
 
 
@@ -61,11 +60,10 @@ async def test_process_csv_file_error_scenarios(
         content=mock_error_csv_scenarios.read_value,
     )
 
-    with pytest.raises(HTTPException) as exc_info:
+    with pytest.raises(mock_error_csv_scenarios.expected_exception_type) as exc_info:
         await process_csv_file(mock_file)
 
-    assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
-    assert mock_error_csv_scenarios.expected_message in str(exc_info.value.detail)
+    assert mock_error_csv_scenarios.expected_message in str(exc_info.value)
 
 
 @pytest.mark.anyio
@@ -78,11 +76,25 @@ async def test_process_csv_file_insufficient_columns(
         content=b"single_column\nvalue1\nvalue2",
     )
 
-    with pytest.raises(HTTPException) as exc_info:
+    with pytest.raises(CsvContentError) as exc_info:
         await process_csv_file(mock_file)
 
-    assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
-    assert "CSV must contain at least two columns" in str(exc_info.value.detail)
+    assert "CSV must contain at least two columns" in str(exc_info.value)
+
+
+@pytest.mark.anyio
+async def test_process_csv_file_skips_target_validation_when_not_required(
+    make_upload_file: UploadFileFactory,
+) -> None:
+    mock_file = make_upload_file(
+        filename="features_only.csv",
+        content=b"feature_a,feature_b\n1,2\n3,4",
+    )
+
+    result = await process_csv_file(mock_file, require_target=False)
+
+    assert isinstance(result, pd.DataFrame)
+    assert list(result.columns) == ["feature_a", "feature_b"]
 
 
 @pytest.mark.anyio
@@ -95,11 +107,10 @@ async def test_process_csv_file_rejects_headers_only(
         content=b"name,age,city",
     )
 
-    with pytest.raises(HTTPException) as exc_info:
+    with pytest.raises(CsvContentError) as exc_info:
         await process_csv_file(mock_file)
 
-    assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
-    assert "CSV contains no data rows" in str(exc_info.value.detail)
+    assert "CSV contains no data rows" in str(exc_info.value)
 
 
 @pytest.mark.parametrize(
@@ -114,11 +125,10 @@ async def test_process_csv_file_rejects_oversize(
     size_bytes: int,
     make_upload_file: UploadFileFactory,
 ) -> None:
-    """Test CSV files exceeding the 50 MB cap are rejected with HTTP 413."""
+    """Test CSV files exceeding the 50 MB cap raise CsvSizeError."""
     mock_file = make_upload_file(filename="huge.csv", size=size_bytes)
 
-    with pytest.raises(HTTPException) as exc_info:
+    with pytest.raises(CsvSizeError) as exc_info:
         await process_csv_file(mock_file)
 
-    assert exc_info.value.status_code == status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
-    assert "File too large" in str(exc_info.value.detail)
+    assert "File too large" in str(exc_info.value)

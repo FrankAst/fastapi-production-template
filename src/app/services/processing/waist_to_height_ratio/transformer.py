@@ -2,6 +2,7 @@ import numpy as np
 from pandas import DataFrame
 
 from app.services.processing.base import BasePreprocessor
+from app.services.processing.exceptions import MissingFeatureColumnsError
 
 from .config import WaistToHeightRatioConfig
 
@@ -21,16 +22,12 @@ class WaistToHeightRatio(BasePreprocessor):
             d: Input DataFrame to validate.
 
         Raises:
-            ValueError: If any required column is missing.
+            MissingFeatureColumnsError: If any required column is missing.
         """
         required = {self.config.waist_column, self.config.height_column}
-        missing = required - set(d.columns)
+        missing = sorted(required - set(d.columns))
         if missing:
-            msg = (
-                f"{self.__class__.__name__} requires columns {missing}, "
-                f"but they are missing from the input DataFrame."
-            )
-            raise ValueError(msg)
+            raise MissingFeatureColumnsError(missing)
 
     def _compute_ratio(self, d: DataFrame) -> DataFrame:
         """Add waist-to-height ratio column.

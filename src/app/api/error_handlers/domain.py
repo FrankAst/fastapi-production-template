@@ -1,39 +1,13 @@
-"""Error handlers for domain layer exceptions."""
-
-from fastapi import Request
+from fastapi import Request, status
 from fastapi.responses import JSONResponse
 
-from app.domain import NoTrainingSchemaError
-from app.services import NoTrainedModelError
+from app.domain import ErrorResponse, NoTrainingSchemaError
 
 
-def no_training_schema_handler(
-    _: Request,
-    exc: NoTrainingSchemaError,
-) -> JSONResponse:
-    """
-    Handle missing training schema errors.
-
-    Returns:
-        JSONResponse: 400 response indicating model needs to be trained.
-    """
+def no_training_schema_handler(_: Request, exc: NoTrainingSchemaError) -> JSONResponse:
     return JSONResponse(
-        status_code=400,
-        content={"detail": str(exc)},
-    )
-
-
-def no_trained_model_handler(
-    _: Request,
-    exc: NoTrainedModelError,
-) -> JSONResponse:
-    """
-    Handle missing trained model errors.
-
-    Returns:
-        JSONResponse: 400 response indicating model needs to be trained.
-    """
-    return JSONResponse(
-        status_code=400,
-        content={"detail": exc.message},
+        status_code=status.HTTP_409_CONFLICT,
+        content=ErrorResponse(detail=str(exc)).model_dump(
+            by_alias=True, exclude_none=True
+        ),
     )

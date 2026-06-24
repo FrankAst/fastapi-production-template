@@ -23,7 +23,7 @@ class TrainingService(BaseModel):
     def train(self, df: DataFrame) -> TrainingResult:
         """
         Orchestrate the full training flow: evaluation, production,
-        and bootstrap models.
+        bootstrap models, and the SHAP background sample.
 
         Args:
             df: Validated DataFrame containing features and target column.
@@ -33,15 +33,17 @@ class TrainingService(BaseModel):
         """
         X, y = self._split_features_target(df)
 
-        n_train, n_test = self._train_evaluation(X, y)
-        self._train_production(X, y)
+        n_train, n_test, X_train = self._train_evaluation(X, y)
+        production_pipeline = self._train_production(X, y)
         self._train_bootstrap(X, y)
+        self._persist_shap_background(X_train, production_pipeline)
 
         return TrainingResult(
             n_samples=len(df),
             n_train=n_train,
             n_test=n_test,
             n_bootstrap=self.lr_config.n_bootstrap_pred,
+            n_shap_background=self.lr_config.n_shap_background,
             threshold=self.lr_config.threshold,
         )
 
@@ -57,7 +59,7 @@ class TrainingService(BaseModel):
             ("classifier", self.lr_config.create_estimator()),
         ])
 
-    def _train_evaluation(self, X: DataFrame, y: Series) -> tuple[int, int]:
+    def _train_evaluation(self, X: DataFrame, y: Series) -> tuple[int, int, DataFrame]:
         X_train, X_test, y_train, y_test = train_test_split(
             X,
             y,
@@ -73,12 +75,13 @@ class TrainingService(BaseModel):
             EvaluationTestSet(X_test=X_test, y_test=y_test), Settings.TEST_SET_PATH
         )
 
-        return len(X_train), len(X_test)
+        return len(X_train), len(X_test), cast("DataFrame", X_train)
 
-    def _train_production(self, X: DataFrame, y: Series) -> None:
+    def _train_production(self, X: DataFrame, y: Series) -> Pipeline:
         pipeline = self._create_pipeline()
         pipeline.fit(X, y)
         save_model(cast("MLModel", pipeline), Settings.PRODUCTION_MODEL_PATH)
+        return pipeline
 
     def _train_bootstrap(self, X: DataFrame, y: Series) -> None:
         ensemble: list[Pipeline] = []
@@ -93,3 +96,14 @@ class TrainingService(BaseModel):
             ensemble.append(pipeline)
 
         save_artifact(ensemble, Settings.BOOTSTRAP_ENSEMBLE_PATH)
+
+    def _persist_shap_background(
+        self, X_train: DataFrame, production_pipeline: Pipeline
+    ) -> None:
+        sample = X_train.sample(
+            n=self.lr_config.n_shap_background,
+            random_state=self.lr_config.random_state,
+        )
+        preprocessor = production_pipeline[:-1]
+        background = preprocessor.transform(sample)
+        save_artifact(background, Settings.SHAP_BACKGROUND_PATH)

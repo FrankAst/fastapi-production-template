@@ -19,6 +19,7 @@ dependencies = [
     "python-multipart==0.0.20",
     "requests==2.32.4",
     "scikit-learn==1.7.1",
+    "shap==0.51.0",
     "streamlit==1.48.0",
     "uvicorn[standard]==0.35.0",
 ]
@@ -145,6 +146,8 @@ skip_covered = true
 [tool.mypy]
 strict = true
 
+mypy_path = "src"
+
 follow_imports = "normal"
 
 python_version = "3.12"
@@ -163,9 +166,14 @@ module = "pandera.*"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+module = "shap.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
 module = [
     "app.domain.schema_validator",
     "app.api.error_handlers.*",
+    "app.services.prediction.service",
 ]
 disallow_any_unimported = false
 warn_return_any = false
@@ -194,6 +202,7 @@ ignore = [
     "ANN401",
     "COM812",
     "RUF067", # __init__ module should only contain docstrings and re-exports
+    "RUF076", # autouse fixtures are intentional in conftests (DI override, path mocks)
 ]
 
 [tool.ruff.format]

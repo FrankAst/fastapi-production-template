@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/astral-sh/uv-pre-commit
-    rev: "0.11.14"
+    rev: "0.11.24"
     hooks:
     -   id: uv-lock
 
@@ -37,7 +37,7 @@ repos:
     -   id: pre-commit-update
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.15.13"
+    rev: "v0.15.19"
     hooks:
     -   id: ruff-format
     -   id: ruff-check
@@ -45,7 +45,7 @@ repos:
         -   "--exit-non-zero-on-fix"
 
 -   repo: https://github.com/pycqa/pylint
-    rev: "v4.0.5"
+    rev: "v4.0.6"
     hooks:
     -   id: pylint
         exclude: ^src/app/playground/
@@ -56,6 +56,7 @@ repos:
         -   "pandera[io]==0.20.4"
         -   "pydantic-settings>=2.10.1"
         -   "scikit-learn>=1.7.1"
+        -   "shap==0.51.0"
         -   "uvicorn[standard]==0.35.0"
         -   "requests>=2.32.4"
         -   "streamlit>=1.48.0"
@@ -81,6 +82,7 @@ repos:
         -   "pandas-stubs>=2.3.2.250827"
         -   "pydantic-settings>=2.10.1"
         -   "scikit-learn>=1.7.1"
+        -   "shap==0.51.0"
         -   "uvicorn[standard]==0.35.0"
         -   "requests>=2.32.4"
         -   "streamlit>=1.48.0"
@@ -98,7 +100,7 @@ repos:
     hooks:
     -   id: nbqa-ruff
         additional_dependencies:
-        -   "ruff==0.14.11"
+        -   "ruff==0.15.19"
 
     -   id: nbqa-pylint
         additional_dependencies:

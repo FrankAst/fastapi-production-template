@@ -83,7 +83,7 @@ def test_evaluate_endpoint_returns_summary(
     assert body["confusionMatrix"]["fn"] == known_result.confusion_matrix.fn
 
 
-def test_evaluate_endpoint_returns_400_when_artifacts_missing(
+def test_evaluate_endpoint_returns_409_when_artifacts_missing(
     client: TestClient,
 ) -> None:
     container = configure_container()
@@ -93,4 +93,4 @@ def test_evaluate_endpoint_returns_400_when_artifacts_missing(
     with container.evaluation_service.override(failing_service):
         response = client.get("/evaluate/")
 
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.status_code == status.HTTP_409_CONFLICT

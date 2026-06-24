@@ -1,6 +1,7 @@
 from pandas import DataFrame
 
 from app.services.processing.base import BasePreprocessor
+from app.services.processing.exceptions import MissingFeatureColumnsError
 
 from .config import SELECTED_FEATURES
 
@@ -16,12 +17,11 @@ class ColumnSelector(BasePreprocessor):
             d: Input DataFrame to validate.
 
         Raises:
-            ValueError: Lists every missing column.
+            MissingFeatureColumnsError: Lists every missing column.
         """
-        missing = [col for col in SELECTED_FEATURES if col not in d.columns]
+        missing = sorted(col for col in SELECTED_FEATURES if col not in d.columns)
         if missing:
-            msg = f"Missing expected columns: {missing}"
-            raise ValueError(msg)
+            raise MissingFeatureColumnsError(missing)
 
     def transform(self, X: DataFrame) -> DataFrame:
         """Select and reorder columns to match the expected feature set.

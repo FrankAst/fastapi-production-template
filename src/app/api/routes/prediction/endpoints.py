@@ -1,46 +1,52 @@
 from typing import Annotated
 
 from dependency_injector.wiring import inject
-from fastapi import APIRouter, Body, File, HTTPException, UploadFile
+from fastapi import APIRouter, Body, File, UploadFile
+from starlette.concurrency import run_in_threadpool
 
 from app.api.dependencies import PredictionServiceDependency
 from app.domain import PredictionInput
 
 from .examples import EXAMPLES
+from .responses import BATCH_RESPONSES, SINGLE_RESPONSES
 from .schemas import (
-    BatchPredictionRequest,
     BatchPredictionResponse,
     SinglePredictionRequest,
     SinglePredictionResponse,
+    parse_prediction_upload,
 )
 
 router = APIRouter(prefix="/prediction", tags=["Prediction"])
 
 
-@router.post("/single")
-async def predict(
-    _prediction_request: Annotated[
+@router.post("/single", responses=SINGLE_RESPONSES)
+@inject
+async def single_predict(
+    prediction_request: Annotated[
         SinglePredictionRequest, Body(openapi_examples=EXAMPLES)
     ],
-    _prediction_service: PredictionServiceDependency,
+    prediction_service: PredictionServiceDependency,
 ) -> SinglePredictionResponse:
     """
-    Placeholder for single predictions from UI.
+    Score a single subject and return probability, bootstrap CI, screening
+    flag, and the SHAP explanation in log-odds space.
 
-    This endpoint is reserved for future UI integration where users will input
-    individual feature values through a web interface. The implementation will
-    be completed once the UI requirements and input structure are defined.
+    Args:
+        prediction_request: Validated NHANES-shaped feature payload.
+        prediction_service: Injected PredictionService.
 
-    Raises:
-        HTTPException: 501 Not Implemented - Use /batch endpoint for now.
+    Returns:
+        SinglePredictionResponse: Probability, CI bounds, screening flag,
+        and the SHAP explanation.
     """
-    raise HTTPException(
-        status_code=501,
-        detail="Single prediction endpoint not yet implemented. Use /batch for now.",
+    validated_df = await run_in_threadpool(prediction_request.to_validated_dataframe)
+    result = await run_in_threadpool(
+        prediction_service.predict, PredictionInput(features=validated_df)
     )
+    return SinglePredictionResponse.model_validate(result)
 
 
-@router.post("/batch")
+@router.post("/batch", responses=BATCH_RESPONSES)
 @inject
 async def batch_predict(
     prediction_service: PredictionServiceDependency,
@@ -56,13 +62,12 @@ async def batch_predict(
     Returns:
         BatchPredictionResponse: The prediction results and count.
     """
-    # Dataset loading and validation
-    feature_matrix = await BatchPredictionRequest.from_upload(file)
-    # In the future there might be additional processing steps here
+    feature_matrix = await parse_prediction_upload(file)
 
-    # Create PredictionInput and perform predictions
     prediction_input = PredictionInput(features=feature_matrix)
-    prediction_output = prediction_service.predict(prediction_input)
+    prediction_output = await run_in_threadpool(
+        prediction_service.batch_predict, prediction_input
+    )
 
     return BatchPredictionResponse(
         predictions=prediction_output.predictions, count=prediction_output.count

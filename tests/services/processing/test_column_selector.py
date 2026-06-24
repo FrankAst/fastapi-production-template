@@ -1,6 +1,7 @@
 import pandas as pd
 import pytest
 
+from app.services.processing import MissingFeatureColumnsError
 from app.services.processing.column_selector.config import SELECTED_FEATURES
 from app.services.processing.column_selector.transformer import ColumnSelector
 
@@ -29,5 +30,5 @@ def test_enforces_column_order(shuffled_post_fe_dataframe: pd.DataFrame) -> None
 def test_raises_on_missing_feature() -> None:
     df = pd.DataFrame({"young_adult": [1], "elderly": [0]})  # missing 11 features
 
-    with pytest.raises(ValueError, match="Missing expected columns"):
+    with pytest.raises(MissingFeatureColumnsError):
         ColumnSelector().transform(df)

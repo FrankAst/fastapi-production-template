@@ -5,6 +5,9 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 from fastapi import UploadFile
 
+from app.domain import AppError
+from app.utils import CsvContentError, CsvFormatError
+
 
 @dataclass
 class CsvTestData:
@@ -22,6 +25,7 @@ class CsvErrorTestData:
     filename: str
     read_value: bytes
     expected_message: str
+    expected_exception_type: type[AppError]
 
 
 UploadFileFactory = Callable[..., Mock]
@@ -110,11 +114,13 @@ def mock_valid_csv_data(request: pytest.FixtureRequest) -> CsvTestData:
             filename="decode_error.csv",
             read_value=b"\x80\x81\x82",  # Invalid UTF-8
             expected_message="Error reading file content",
+            expected_exception_type=CsvFormatError,
         ),
         CsvErrorTestData(
             filename="empty.csv",
             read_value=b"",
             expected_message="Error parsing CSV",
+            expected_exception_type=CsvFormatError,
         ),
         CsvErrorTestData(
             filename="malformed.csv",
@@ -122,6 +128,7 @@ def mock_valid_csv_data(request: pytest.FixtureRequest) -> CsvTestData:
             expected_message=(
                 "Target column 'has_diabetes_or_prediabetes' contains missing values"
             ),
+            expected_exception_type=CsvContentError,
         ),
         CsvErrorTestData(
             filename="nan_target.csv",
@@ -129,6 +136,7 @@ def mock_valid_csv_data(request: pytest.FixtureRequest) -> CsvTestData:
             expected_message=(
                 "Target column 'has_diabetes_or_prediabetes' contains missing values"
             ),
+            expected_exception_type=CsvContentError,
         ),
     ]
 )
