@@ -22,24 +22,6 @@ _PATCH_TARGET = (
 
 
 @pytest.fixture
-def realistic_payload() -> dict[str, object]:
-    return {
-        "RIDAGEYR": 45,
-        "BMXWAIST": 95.0,
-        "BMXHT": 170.0,
-        "toldHighBp": True,
-        "toldHighCholesterol": False,
-        "isFemale": True,
-        "drinkingFrequency": 2,
-        "diastolicBp": 80.0,
-        "systolicBp": 120.0,
-        "educationLevel": 4,
-        "phq9Score": 5,
-        "vigorousMinutesPerWeek": 30,
-    }
-
-
-@pytest.fixture
 def known_prediction_output() -> PredictionOutput:
     contributions = tuple(
         ShapContribution(feature=feature, shap_value=(13 - index) * 0.1)
